@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:openai.github.io)",
+      "WebSearch",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:www.anthropic.com)",
+      "WebFetch(domain:www.cnblogs.com)",
+      "WebFetch(domain:www.sohu.com)",
+      "WebFetch(domain:article.juejin.cn)",
+      "WebFetch(domain:juejin.cn)",
+      "WebFetch(domain:www.alphamatch.ai)",
+      "WebFetch(domain:blog.csdn.net)",
+      "WebFetch(domain:m.163.com)"
+    ]
+  }
+}

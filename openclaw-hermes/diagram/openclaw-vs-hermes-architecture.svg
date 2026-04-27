@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820">
+    <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+        </marker>
+        <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+        </marker>
+        <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+        </marker>
+        <marker id="arrow-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+        </marker>
+        <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+        </marker>
+    </defs>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+        text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+    </style>
+
+    <!-- Background -->
+    <rect width="100%" height="100%" fill="#0f172a"/>
+    <rect width="100%" height="100%" fill="url(#grid)"/>
+
+    <!-- Title -->
+    <text x="600" y="36" fill="white" font-size="16" font-weight="700" text-anchor="middle">OpenClaw vs Hermes —
+        Architecture Comparison
+    </text>
+    <text x="600" y="54" fill="#94a3b8" font-size="9" text-anchor="middle">谁来维护 Agent 的能力边界？</text>
+
+    <!-- ==================== LEFT: OpenClaw ==================== -->
+    <!-- Region boundary -->
+    <rect x="30" y="70" width="520" height="720" rx="12" fill="none" stroke="#22d3ee" stroke-width="1.5"
+            stroke-dasharray="8,4"/>
+    <text x="50" y="90" fill="#22d3ee" font-size="11" font-weight="600">OpenClaw</text>
+    <text x="50" y="104" fill="#94a3b8" font-size="8">TypeScript · Node.js · 364k Stars</text>
+
+    <!-- Channels Layer -->
+    <rect x="50" y="118" width="480" height="90" rx="8" fill="none" stroke="#fbbf24" stroke-width="1"
+            stroke-dasharray="4,4"/>
+    <text x="66" y="134" fill="#fbbf24" font-size="8" font-weight="500">26+ Messaging Channels</text>
+
+    <rect x="60" y="142" width="108" height="52" rx="6" fill="#0f172a"/>
+    <rect x="60" y="142" width="108" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="114" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">WhatsApp</text>
+    <text x="114" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Telegram, Slack…</text>
+
+    <rect x="182" y="142" width="108" height="52" rx="6" fill="#0f172a"/>
+    <rect x="182" y="142" width="108" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="236" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Discord</text>
+    <text x="236" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">iMessage, Signal…</text>
+
+    <rect x="304" y="142" width="108" height="52" rx="6" fill="#0f172a"/>
+    <rect x="304" y="142" width="108" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="358" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">WeChat</text>
+    <text x="358" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">QQ, Feishu…</text>
+
+    <rect x="426" y="142" width="86" height="52" rx="6" fill="#0f172a"/>
+    <rect x="426" y="142" width="86" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="469" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Plugin</text>
+    <text x="469" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Extensible</text>
+
+    <!-- Arrows: Channels → Gateway -->
+    <line x1="170" y1="210" x2="170" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="290" y1="210" x2="290" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="410" y1="210" x2="410" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- Gateway -->
+    <rect x="60" y="244" width="460" height="76" rx="6" fill="#0f172a"/>
+    <rect x="60" y="244" width="460" height="76" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="290" y="270" fill="white" font-size="12" font-weight="700" text-anchor="middle">Node.js Gateway（控制平面）
+    </text>
+    <text x="290" y="288" fill="#94a3b8" font-size="9" text-anchor="middle">Sessions · Presence · Config · Cron ·
+        Webhooks · Control UI · Canvas
+    </text>
+    <text x="290" y="308" fill="#34d399" font-size="8" text-anchor="middle">不执行工具，只管理一切</text>
+
+    <!-- Arrow: Gateway → Pi Agent -->
+    <line x1="290" y1="320" x2="290" y2="348" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+    <text x="310" y="338" fill="#94a3b8" font-size="7">RPC</text>
+
+    <!-- Pi Agent -->
+    <rect x="130" y="354" width="320" height="60" rx="6" fill="#0f172a"/>
+    <rect x="130" y="354" width="320" height="60" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="290" y="378" fill="white" font-size="11" font-weight="600" text-anchor="middle">Pi Agent（RPC 子进程）</text>
+    <text x="290" y="398" fill="#94a3b8" font-size="9" text-anchor="middle">实际 AI 推理执行</text>
+
+    <!-- Arrow: Gateway → Nodes -->
+    <line x1="520" y1="282" x2="520" y2="450" stroke="#22d3ee" stroke-width="1" stroke-opacity="0.5"/>
+    <path d="M 520 282 L 540 282 L 540 450" fill="none" stroke="#22d3ee" stroke-width="1" marker-end="url(#arrow-cyan)"
+            stroke-opacity="0.5"/>
+    <text x="546" y="370" fill="#94a3b8" font-size="7">WebSocket</text>
+
+    <!-- Nodes -->
+    <rect x="60" y="430" width="460" height="90" rx="8" fill="none" stroke="#a78bfa" stroke-width="1"
+            stroke-dasharray="4,4"/>
+    <text x="76" y="446" fill="#a78bfa" font-size="8" font-weight="500">Native Companion Apps</text>
+
+    <rect x="70" y="456" width="140" height="52" rx="6" fill="#0f172a"/>
+    <rect x="70" y="456" width="140" height="52" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+    <text x="140" y="478" fill="white" font-size="10" font-weight="600" text-anchor="middle">macOS</text>
+    <text x="140" y="494" fill="#94a3b8" font-size="8" text-anchor="middle">Voice Wake · PTT · Canvas</text>
+
+    <rect x="224" y="456" width="140" height="52" rx="6" fill="#0f172a"/>
+    <rect x="224" y="456" width="140" height="52" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+    <text x="294" y="478" fill="white" font-size="10" font-weight="600" text-anchor="middle">iOS Node</text>
+    <text x="294" y="494" fill="#94a3b8" font-size="8" text-anchor="middle">Camera · Bonjour · Canvas</text>
+
+    <rect x="378" y="456" width="130" height="52" rx="6" fill="#0f172a"/>
+    <rect x="378" y="456" width="130" height="52" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1"/>
+    <text x="443" y="478" fill="white" font-size="10" font-weight="600" text-anchor="middle">Android Node</text>
+    <text x="443" y="494" fill="#94a3b8" font-size="8" text-anchor="middle">Camera · Canvas · Voice</text>
+
+    <!-- Security -->
+    <rect x="60" y="540" width="220" height="70" rx="6" fill="#0f172a"/>
+    <rect x="60" y="540" width="220" height="70" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="170" y="564" fill="white" font-size="10" font-weight="600" text-anchor="middle">安全模型：默认安全</text>
+    <text x="170" y="580" fill="#94a3b8" font-size="8" text-anchor="middle">三级沙箱 (off / non-main / all)</text>
+    <text x="170" y="596" fill="#94a3b8" font-size="8" text-anchor="middle">SECURITY.md · security audit</text>
+
+    <!-- ClawHub -->
+    <rect x="300" y="540" width="220" height="70" rx="6" fill="#0f172a"/>
+    <rect x="300" y="540" width="220" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="410" y="564" fill="white" font-size="10" font-weight="600" text-anchor="middle">ClawHub 技能注册表</text>
+    <text x="410" y="580" fill="#94a3b8" font-size="8" text-anchor="middle">人工编写 · 手动安装 · 社区维护</text>
+    <text x="410" y="596" fill="#fbbf24" font-size="8" text-anchor="middle">人来维护 Agent 能力边界</text>
+
+    <!-- Memory -->
+    <rect x="60" y="630" width="460" height="56" rx="6" fill="#0f172a"/>
+    <rect x="60" y="630" width="460" height="56" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+    <text x="290" y="654" fill="white" font-size="10" font-weight="600" text-anchor="middle">可替换记忆插件槽</text>
+    <text x="290" y="672" fill="#94a3b8" font-size="8" text-anchor="middle">MEMORY.md · 灵活但无上限约束 ·
+        无冻结快照优化
+    </text>
+
+    <!-- ==================== RIGHT: Hermes ==================== -->
+    <!-- Region boundary -->
+    <rect x="650" y="70" width="520" height="720" rx="12" fill="none" stroke="#34d399" stroke-width="1.5"
+            stroke-dasharray="8,4"/>
+    <text x="670" y="90" fill="#34d399" font-size="11" font-weight="600">Hermes</text>
+    <text x="670" y="104" fill="#94a3b8" font-size="8">Python · SQLite · 118k Stars</text>
+
+    <!-- Terminal Backends -->
+    <rect x="670" y="118" width="480" height="90" rx="8" fill="none" stroke="#fbbf24" stroke-width="1"
+            stroke-dasharray="4,4"/>
+    <text x="686" y="134" fill="#fbbf24" font-size="8" font-weight="500">6 Terminal Backends</text>
+
+    <rect x="680" y="142" width="88" height="52" rx="6" fill="#0f172a"/>
+    <rect x="680" y="142" width="88" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="724" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Local</text>
+    <text x="724" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Direct</text>
+
+    <rect x="782" y="142" width="88" height="52" rx="6" fill="#0f172a"/>
+    <rect x="782" y="142" width="88" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="826" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Docker</text>
+    <text x="826" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Isolated</text>
+
+    <rect x="884" y="142" width="88" height="52" rx="6" fill="#0f172a"/>
+    <rect x="884" y="142" width="88" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="928" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Daytona</text>
+    <text x="928" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Serverless</text>
+
+    <rect x="986" y="142" width="76" height="52" rx="6" fill="#0f172a"/>
+    <rect x="986" y="142" width="76" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="1024" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">Modal</text>
+    <text x="1024" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">~0 idle</text>
+
+    <rect x="1076" y="142" width="62" height="52" rx="6" fill="#0f172a"/>
+    <rect x="1076" y="142" width="62" height="52" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1"/>
+    <text x="1107" y="164" fill="white" font-size="10" font-weight="600" text-anchor="middle">SSH</text>
+    <text x="1107" y="180" fill="#94a3b8" font-size="8" text-anchor="middle">Remote</text>
+
+    <!-- Arrows: Backends → AIAgent -->
+    <line x1="724" y1="210" x2="724" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="826" y1="210" x2="826" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+    <line x1="928" y1="210" x2="928" y2="238" stroke="#64748b" stroke-width="1" marker-end="url(#arrow)"/>
+
+    <!-- AIAgent Core -->
+    <rect x="680" y="244" width="460" height="76" rx="6" fill="#0f172a"/>
+    <rect x="680" y="244" width="460" height="76" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="910" y="270" fill="white" font-size="12" font-weight="700" text-anchor="middle">AIAgent 核心循环（~3600
+        行）
+    </text>
+    <text x="910" y="288" fill="#94a3b8" font-size="9" text-anchor="middle">同步主循环 · ToolRegistry 派发 · SessionDB
+        持久化
+    </text>
+    <text x="910" y="308" fill="#34d399" font-size="8" text-anchor="middle">瓶颈是 LLM 延迟不是 I/O，同步代码更易推理
+    </text>
+
+    <!-- ToolRegistry -->
+    <rect x="680" y="340" width="460" height="80" rx="6" fill="#0f172a"/>
+    <rect x="680" y="340" width="460" height="80" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="910" y="362" fill="white" font-size="11" font-weight="600" text-anchor="middle">ToolRegistry 单例</text>
+
+    <text x="720" y="384" fill="#22d3ee" font-size="8" font-weight="500">① 自注册</text>
+    <text x="800" y="384" fill="#22d3ee" font-size="8" font-weight="500">② 运行时可用性</text>
+    <text x="910" y="384" fill="#22d3ee" font-size="8" font-weight="500">③ 动态 Schema 重建</text>
+    <text x="720" y="400" fill="#94a3b8" font-size="7">registry.register()</text>
+    <text x="800" y="400" fill="#94a3b8" font-size="7">check_fn() 优雅降级</text>
+    <text x="910" y="400" fill="#94a3b8" font-size="7">防幻觉：工具不可用时引用也移除</text>
+
+    <!-- coerce_tool_args -->
+    <rect x="680" y="434" width="460" height="40" rx="6" fill="#0f172a"/>
+    <rect x="680" y="434" width="460" height="40" rx="6" fill="rgba(30,41,59,0.5)" stroke="#94a3b8" stroke-width="1"/>
+    <text x="910" y="454" fill="white" font-size="9" font-weight="600" text-anchor="middle">coerce_tool_args() —
+        参数类型强转（防御 LLM 返回 "42" 而非 42）
+    </text>
+    <text x="910" y="468" fill="#94a3b8" font-size="7" text-anchor="middle">工具派发前统一类型校验与安全转换</text>
+
+    <!-- Context Compression Pipeline -->
+    <rect x="680" y="490" width="460" height="70" rx="6" fill="#0f172a"/>
+    <rect x="680" y="490" width="460" height="70" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text x="910" y="512" fill="white" font-size="10" font-weight="600" text-anchor="middle">上下文压缩四阶段流水线
+    </text>
+    <text x="910" y="530" fill="#a78bfa" font-size="8" text-anchor="middle">① 廉价预通过(0 LLM) → ② 边界确定 → ③
+        结构化摘要(7部分) → ④ 完整性修复
+    </text>
+    <text x="910" y="546" fill="#94a3b8" font-size="7" text-anchor="middle">增量更新：后续压缩在前一次摘要基础上叠加
+    </text>
+
+    <!-- Security -->
+    <rect x="680" y="576" width="220" height="70" rx="6" fill="#0f172a"/>
+    <rect x="680" y="576" width="220" height="70" rx="6" fill="rgba(136,19,55,0.4)" stroke="#fb7185"
+            stroke-width="1.5"/>
+    <text x="790" y="600" fill="white" font-size="10" font-weight="600" text-anchor="middle">安全模型：默认信任</text>
+    <text x="790" y="616" fill="#94a3b8" font-size="8" text-anchor="middle">注入扫描 · 路径验证</text>
+    <text x="790" y="632" fill="#94a3b8" font-size="8" text-anchor="middle">面向技术用户自我管理</text>
+
+    <!-- RL Flywheel -->
+    <rect x="920" y="576" width="220" height="70" rx="6" fill="#0f172a"/>
+    <rect x="920" y="576" width="220" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="1030" y="600" fill="white" font-size="10" font-weight="600" text-anchor="middle">RL 数据飞轮</text>
+    <text x="1030" y="616" fill="#94a3b8" font-size="8" text-anchor="middle">轨迹导出 JSONL → 微调小模型</text>
+    <text x="1030" y="632" fill="#fbbf24" font-size="8" text-anchor="middle">Agent 自己维护能力边界</text>
+
+    <!-- Memory -->
+    <rect x="680" y="664" width="460" height="56" rx="6" fill="#0f172a"/>
+    <rect x="680" y="664" width="460" height="56" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text x="910" y="688" fill="white" font-size="10" font-weight="600" text-anchor="middle">有界策展记忆 + 冻结快照
+    </text>
+    <text x="910" y="706" fill="#94a3b8" font-size="8" text-anchor="middle">MEMORY.md 2200字符 · USER.md 1375字符 ·
+        前缀缓存全会话有效
+    </text>
+
+    <!-- Skills Auto -->
+    <rect x="680" y="736" width="460" height="40" rx="6" fill="#0f172a"/>
+    <rect x="680" y="736" width="460" height="40" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1"/>
+    <text x="910" y="756" fill="white" font-size="9" font-weight="600" text-anchor="middle">Skills 自动创建 · 自我改进 ·
+        654 skills (agentskills.io 开放标准)
+    </text>
+    <text x="910" y="770" fill="#94a3b8" font-size="7" text-anchor="middle">任务完成 → 经验提取 → 技能生成 →
+        使用中改进
+    </text>
+
+    <!-- ==================== CENTER: Key Divides ==================== -->
+    <!-- Vertical divider -->
+    <line x1="600" y1="80" x2="600" y2="780" stroke="#334155" stroke-width="1" stroke-dasharray="6,6"/>
+
+    <!-- VS badge -->
+    <rect x="570" y="76" width="60" height="26" rx="13" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+    <text x="600" y="93" fill="#fbbf24" font-size="10" font-weight="700" text-anchor="middle">VS</text>
+
+    <!-- Divide 1: Runtime -->
+    <rect x="555" y="250" width="90" height="52" rx="6" fill="#0f172a"/>
+    <rect x="555" y="250" width="90" height="52" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+    <text x="600" y="270" fill="#fbbf24" font-size="8" font-weight="600" text-anchor="middle">运行时</text>
+    <text x="600" y="290" fill="#94a3b8" font-size="7" text-anchor="middle">控制平面 vs 进程</text>
+
+    <!-- Divide 2: Capability -->
+    <rect x="555" y="546" width="90" height="52" rx="6" fill="#0f172a"/>
+    <rect x="555" y="546" width="90" height="52" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+    <text x="600" y="566" fill="#fbbf24" font-size="8" font-weight="600" text-anchor="middle">能力边界</text>
+    <text x="600" y="586" fill="#94a3b8" font-size="7" text-anchor="middle">人 vs Agent</text>
+
+    <!-- Divide 3: Security -->
+    <rect x="555" y="580" width="90" height="52" rx="6" fill="#0f172a"/>
+    <rect x="555" y="580" width="90" height="52" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1"/>
+    <text x="600" y="600" fill="#fbbf24" font-size="8" font-weight="600" text-anchor="middle">安全姿态</text>
+    <text x="600" y="620" fill="#94a3b8" font-size="7" text-anchor="middle">默认安全 vs 信任</text>
+
+    <!-- Bottom summary -->
+    <rect x="140" y="775" width="920" height="8" rx="4" fill="rgba(120,53,15,0.2)" stroke="#fbbf24" stroke-width="0.5"/>
+</svg>

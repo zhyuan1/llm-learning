@@ -3,7 +3,7 @@
   <desc id="desc">用泳道图展示 Client、Coordinator、Participant A、Participant B 之间完成一次跨 split 事务提交的时序。</desc>
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a2b3d" stroke-width="0.5"/>
     </pattern>
     <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
       <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
@@ -30,7 +30,7 @@
     </style>
   </defs>
 
-  <rect width="1480" height="1180" fill="#0f172a"/>
+  <rect width="1480" height="1180" fill="#1e1e2e"/>
   <rect width="1480" height="1180" fill="url(#grid)"/>
 
   <text x="64" y="68" class="title">一条跨 split 事务是怎样提交的</text>
@@ -38,22 +38,22 @@
 
   <rect x="58" y="132" width="1364" height="954" rx="24" fill="rgba(15,23,42,0.58)" stroke="#334155" stroke-width="1.2"/>
 
-  <rect x="110" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="110" y="180" width="220" height="58" rx="12" fill="#1e1e2e"/>
   <rect x="110" y="180" width="220" height="58" rx="12" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.6"/>
   <text x="220" y="216" text-anchor="middle" class="actor">Client</text>
   <line x1="220" y1="238" x2="220" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
 
-  <rect x="430" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="430" y="180" width="220" height="58" rx="12" fill="#1e1e2e"/>
   <rect x="430" y="180" width="220" height="58" rx="12" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.6"/>
   <text x="540" y="216" text-anchor="middle" class="actor">Coordinator</text>
   <line x1="540" y1="238" x2="540" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
 
-  <rect x="750" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="750" y="180" width="220" height="58" rx="12" fill="#1e1e2e"/>
   <rect x="750" y="180" width="220" height="58" rx="12" fill="rgba(76,29,149,0.40)" stroke="#a78bfa" stroke-width="1.6"/>
   <text x="860" y="216" text-anchor="middle" class="actor">Participant A</text>
   <line x1="860" y1="238" x2="860" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
 
-  <rect x="1070" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="1070" y="180" width="220" height="58" rx="12" fill="#1e1e2e"/>
   <rect x="1070" y="180" width="220" height="58" rx="12" fill="rgba(120,53,15,0.28)" stroke="#fbbf24" stroke-width="1.6"/>
   <text x="1180" y="216" text-anchor="middle" class="actor">Participant B</text>
   <line x1="1180" y1="238" x2="1180" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
@@ -117,7 +117,7 @@
   <text x="860" y="968" text-anchor="middle" class="small">Participant B：落成新版本并释放锁</text>
   <text x="380" y="1000" text-anchor="middle" class="label">向 Client 返回“提交成功”</text>
 
-  <rect x="170" y="1042" width="1130" height="60" rx="16" fill="#0f172a"/>
+  <rect x="170" y="1042" width="1130" height="60" rx="16" fill="#1e1e2e"/>
   <rect x="170" y="1042" width="1130" height="60" rx="16" fill="rgba(59,130,246,0.18)" stroke="#60a5fa" stroke-width="1.5"/>
   <text x="735" y="1072" text-anchor="middle" class="label">这条时间线的关键不是“事务提交了”，而是“提交顺序、时间戳顺序、对外可见顺序”被统一起来了</text>
   <text x="735" y="1094" text-anchor="middle" class="tiny">跨 split 事务贵，不只是因为多走几跳，而是因为锁、Paxos、2PC、commit wait 都在一条提交路径里叠加出现</text>

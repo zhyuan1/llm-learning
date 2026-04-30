@@ -3,7 +3,7 @@
   <desc id="desc">展示事务 T1 在返回成功前执行 commit wait，从而保证外部观察顺序与提交时间戳顺序一致。</desc>
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a2b3d" stroke-width="0.5"/>
     </pattern>
     <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
       <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
@@ -27,7 +27,7 @@
     </style>
   </defs>
 
-  <rect width="1360" height="820" fill="#0f172a"/>
+  <rect width="1360" height="820" fill="#1e1e2e"/>
   <rect width="1360" height="820" fill="url(#grid)"/>
 
   <text x="64" y="68" class="title">commit wait 如何保证 external consistency</text>
@@ -53,13 +53,13 @@
   <text x="700" y="170" text-anchor="middle" class="small">T1 对外返回成功</text>
   <text x="920" y="170" text-anchor="middle" class="small">T2 选定 timestamp = 16</text>
 
-  <rect x="250" y="294" width="450" height="68" rx="16" fill="#0f172a"/>
+  <rect x="250" y="294" width="450" height="68" rx="16" fill="#1e1e2e"/>
   <rect x="250" y="294" width="450" height="68" rx="16" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.6"/>
   <text x="475" y="322" text-anchor="middle" class="label">T1 commit wait</text>
   <text x="475" y="347" text-anchor="middle" class="small">在返回成功前，先等到 timestamp=12 在真实时间里已经过去</text>
 
   <path d="M 702 328 L 918 438" fill="none" stroke="#34d399" stroke-width="2.4" marker-end="url(#arrow-emerald)"/>
-  <rect x="808" y="394" width="220" height="62" rx="14" fill="#0f172a"/>
+  <rect x="808" y="394" width="220" height="62" rx="14" fill="#1e1e2e"/>
   <rect x="808" y="394" width="220" height="62" rx="14" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.5"/>
   <text x="918" y="420" text-anchor="middle" class="label">T2 后开始提交</text>
   <text x="918" y="444" text-anchor="middle" class="small">因此拿到更晚的 timestamp</text>
@@ -69,12 +69,12 @@
   <path d="M 700 248 L 700 294" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
   <path d="M 920 248 L 920 394" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
 
-  <rect x="210" y="506" width="940" height="72" rx="18" fill="#0f172a"/>
+  <rect x="210" y="506" width="940" height="72" rx="18" fill="#1e1e2e"/>
   <rect x="210" y="506" width="940" height="72" rx="18" fill="rgba(59,130,246,0.22)" stroke="#60a5fa" stroke-width="1.6"/>
   <text x="680" y="536" text-anchor="middle" class="label">external consistency 要求</text>
   <text x="680" y="562" text-anchor="middle" class="small">如果 T1 已经先被外部观察为完成，那么之后开始的 T2 不能拿到一个“看起来早于 T1”的 timestamp</text>
 
-  <rect x="1010" y="630" width="280" height="136" rx="18" fill="#0f172a"/>
+  <rect x="1010" y="630" width="280" height="136" rx="18" fill="#1e1e2e"/>
   <rect x="1010" y="630" width="280" height="136" rx="18" fill="rgba(136,19,55,0.36)" stroke="#fb7185" stroke-width="1.6"/>
   <text x="1150" y="664" text-anchor="middle" class="label">没有 commit wait</text>
   <text x="1150" y="690" text-anchor="middle" class="warn">观察顺序可能先看到 T1 成功</text>

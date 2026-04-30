@@ -22,7 +22,7 @@ Keys【1】。一个框架专门为另一个框架的用户准备迁移工具，
 
 ## 二、运行时形态：控制平面 vs. 执行进程
 
-![OpenClaw vs Hermes 架构对比](diagram/openclaw-vs-hermes-architecture.svg)
+![OpenClaw vs Hermes 架构对比](diagram/openclaw-vs-hermes-architecture.svg.png)
 
 两个项目的运行时形态差异，最直接体现在语言选择上，而语言选择背后是对"这个东西应该长什么样"的根本判断。
 

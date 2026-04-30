@@ -3,7 +3,7 @@
   <desc id="desc">展示 earliest、latest 和 uncertainty interval，说明 TT.now 返回的是带误差边界的时间窗口。</desc>
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#2a2b3d" stroke-width="0.5"/>
     </pattern>
     <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
       <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
@@ -28,7 +28,7 @@
     </style>
   </defs>
 
-  <rect width="1280" height="720" fill="#0f172a"/>
+  <rect width="1280" height="720" fill="#1e1e2e"/>
   <rect width="1280" height="720" fill="url(#grid)"/>
 
   <text x="64" y="68" class="title">TrueTime：时间不是一个点，而是一个区间</text>
@@ -36,8 +36,8 @@
 
   <rect x="70" y="132" width="1140" height="520" rx="24" fill="rgba(15,23,42,0.58)" stroke="#334155" stroke-width="1.2"/>
 
-  <text x="640" y="210" text-anchor="middle" class="formula">TT.now() = [ earliest , latest ]</text>
-  <text x="640" y="240" text-anchor="middle" class="small">系统拿到的是一个时间窗口，而不是单点时钟</text>
+  <text x="600" y="210" text-anchor="middle" class="formula">TT.now() = [ earliest , latest ]</text>
+  <text x="600" y="225" text-anchor="middle" class="small">系统拿到的是一个时间窗口，而不是单点时钟</text>
 
   <line x1="140" y1="390" x2="1120" y2="390" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
   <text x="1132" y="396" class="label">真实时间</text>
@@ -53,23 +53,26 @@
   <text x="600" y="384" text-anchor="middle" class="box-title">uncertainty interval</text>
   <text x="600" y="410" text-anchor="middle" class="box-text">真实时间大概率落在这个窗口内</text>
 
-  <line x1="420" y1="250" x2="780" y2="250" stroke="#fbbf24" stroke-width="2.5" marker-start="url(#arrow-amber)" marker-end="url(#arrow-amber)"/>
-  <text x="600" y="236" text-anchor="middle" class="label">误差边界 ε 可计算</text>
+  <line x1="420" y1="262" x2="780" y2="262" stroke="#fbbf24" stroke-width="2.5" marker-start="url(#arrow-amber)"
+          marker-end="url(#arrow-amber)"/>
+  <text x="600" y="256" text-anchor="middle" class="label">误差边界 ε 可计算</text>
 
-  <path d="M 245 330 C 310 330, 320 330, 390 330" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow-cyan)"/>
-  <rect x="86" y="246" width="300" height="84" rx="16" fill="#0f172a"/>
-  <rect x="86" y="246" width="300" height="84" rx="16" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.5"/>
-  <text x="236" y="276" text-anchor="middle" class="box-title">不是“现在到底几点”</text>
-  <text x="236" y="302" text-anchor="middle" class="box-text">而是“我能确定现在落在哪个时间窗口里”</text>
+  <path d="M 386 340 C 400 340, 408 340, 418 340" fill="none" stroke="#22d3ee" stroke-width="2"
+          marker-end="url(#arrow-cyan)"/>
+  <rect x="86" y="275" width="300" height="84" rx="16" fill="#1e1e2e"/>
+  <rect x="86" y="275" width="300" height="84" rx="16" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="236" y="308" text-anchor="middle" class="box-title">不是"现在到底几点"</text>
+  <text x="236" y="334" text-anchor="middle" class="box-text">而是"我能确定现在落在哪个时间窗口里"</text>
 
-  <path d="M 862 330 C 930 330, 975 330, 1048 330" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow)"/>
-  <rect x="876" y="246" width="322" height="84" rx="16" fill="#0f172a"/>
-  <rect x="876" y="246" width="322" height="84" rx="16" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.5"/>
-  <text x="1037" y="276" text-anchor="middle" class="box-title">误差边界可计算</text>
-  <text x="1037" y="302" text-anchor="middle" class="box-text">后续事务排序、快照定义才有可证明的基础</text>
+  <path d="M 782 340 C 830 340, 850 340, 874 340" fill="none" stroke="#34d399" stroke-width="2"
+          marker-end="url(#arrow)"/>
+  <rect x="876" y="275" width="322" height="84" rx="16" fill="#1e1e2e"/>
+  <rect x="876" y="275" width="322" height="84" rx="16" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="1037" y="308" text-anchor="middle" class="box-title">误差边界可计算</text>
+  <text x="1037" y="334" text-anchor="middle" class="box-text">后续事务排序、快照定义才有可证明的基础</text>
 
   <path d="M 600 442 L 600 508" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-amber)"/>
-  <rect x="378" y="510" width="444" height="94" rx="18" fill="#0f172a"/>
+  <rect x="378" y="510" width="444" height="94" rx="18" fill="#1e1e2e"/>
   <rect x="378" y="510" width="444" height="94" rx="18" fill="rgba(120,53,15,0.28)" stroke="#fbbf24" stroke-width="1.6"/>
   <text x="600" y="545" text-anchor="middle" class="box-title">TrueTime 真正提供的能力</text>
   <text x="600" y="572" text-anchor="middle" class="box-text">不是一块“完美时钟”，而是知道自己有多不确定</text>

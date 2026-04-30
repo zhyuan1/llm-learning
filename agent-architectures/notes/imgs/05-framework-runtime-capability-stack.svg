@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 960">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+    </pattern>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 26px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 14px; }
+      .head { fill: white; font-size: 15px; font-weight: 700; }
+      .sub { fill: #cbd5e1; font-size: 11px; }
+      .label { fill: #e2e8f0; font-size: 12px; font-weight: 600; }
+      .muted { fill: #94a3b8; font-size: 11px; }
+      .cost { fill: #f8fafc; font-size: 13px; font-weight: 600; }
+    </style>
+  </defs>
+  <rect width="1440" height="960" fill="#0f172a"/>
+  <rect width="1440" height="960" fill="url(#grid)"/>
+
+  <text x="40" y="52" class="title">生产级 Agent 系统真正依赖的不是 prompt，而是运行时能力栈</text>
+  <text x="40" y="78" class="subtitle">系统越往上走，问题越像软件系统，而不只是模型调用</text>
+
+  <rect x="90" y="780" width="760" height="90" rx="14" fill="rgba(76,29,149,0.42)" stroke="#a78bfa" stroke-width="1.8"/>
+  <text x="470" y="818" class="head" text-anchor="middle">1. Inference</text>
+  <text x="470" y="846" class="sub" text-anchor="middle">LLM · tools · context · token cost · tool turns</text>
+
+  <rect x="110" y="665" width="720" height="92" rx="14" fill="rgba(8,51,68,0.42)" stroke="#22d3ee" stroke-width="1.8"/>
+  <text x="470" y="703" class="head" text-anchor="middle">2. State &amp; Recovery</text>
+  <text x="470" y="731" class="sub" text-anchor="middle">state store · checkpoint · resume · long-running task recovery</text>
+
+  <rect x="130" y="545" width="680" height="92" rx="14" fill="rgba(6,78,59,0.42)" stroke="#34d399" stroke-width="1.8"/>
+  <text x="470" y="583" class="head" text-anchor="middle">3. Execution Boundary</text>
+  <text x="470" y="611" class="sub" text-anchor="middle">sandbox · credential isolation · tool proxy · permission boundary</text>
+
+  <rect x="150" y="425" width="640" height="92" rx="14" fill="rgba(120,53,15,0.32)" stroke="#fbbf24" stroke-width="1.8"/>
+  <text x="470" y="463" class="head" text-anchor="middle">4. Human Oversight</text>
+  <text x="470" y="491" class="sub" text-anchor="middle">approval · interrupt · review · human-in-the-loop</text>
+
+  <rect x="170" y="305" width="600" height="92" rx="14" fill="rgba(59,130,246,0.32)" stroke="#60a5fa" stroke-width="1.8"/>
+  <text x="470" y="343" class="head" text-anchor="middle">5. Observability</text>
+  <text x="470" y="371" class="sub" text-anchor="middle">trace · metrics · logs · replay · diagnosis</text>
+
+  <rect x="190" y="185" width="560" height="92" rx="14" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.8"/>
+  <text x="470" y="223" class="head" text-anchor="middle">6. Runtime &amp; Deployment</text>
+  <text x="470" y="251" class="sub" text-anchor="middle">scheduler · hosting · multi-service integration · deployment</text>
+
+  <rect x="930" y="180" width="400" height="420" rx="18" fill="rgba(15,23,42,0.92)" stroke="#334155" stroke-width="1.2"/>
+  <text x="1130" y="220" class="head" text-anchor="middle">常见故障点</text>
+  <text x="980" y="270" class="label">• 恢复点不一致</text>
+  <text x="980" y="305" class="label">• 工具代理配置不当</text>
+  <text x="980" y="340" class="label">• trace 链断掉</text>
+  <text x="980" y="375" class="label">• 人工审批卡住</text>
+  <text x="980" y="410" class="label">• 沙箱权限过严或过松</text>
+  <text x="980" y="445" class="label">• session / checkpoint 成本被低估</text>
+  <text x="980" y="480" class="label">• 长时任务越来越难排障</text>
+  <text x="980" y="525" class="muted">这些问题不会让系统立刻显得笨，</text>
+  <text x="980" y="545" class="muted">但会让它逐渐变得难运维、难扩展。</text>
+
+  <rect x="930" y="640" width="400" height="210" rx="18" fill="rgba(15,23,42,0.92)" stroke="#334155" stroke-width="1.2"/>
+  <text x="1130" y="680" class="head" text-anchor="middle">三类长期成本</text>
+  <text x="980" y="725" class="cost">1. 推理成本</text>
+  <text x="980" y="748" class="muted">token、上下文、工具回合、并行拆分</text>
+  <text x="980" y="785" class="cost">2. 状态与观测成本</text>
+  <text x="980" y="808" class="muted">session、checkpoint、trace、replay</text>
+  <text x="980" y="845" class="cost">3. 运行时与部署成本</text>
+  <text x="980" y="868" class="muted">sandbox、代理、审批链路、hosting</text>
+</svg>

@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1480 1180" role="img" aria-labelledby="title desc">
+  <title id="title">一条跨 split 事务是怎样提交的</title>
+  <desc id="desc">用泳道图展示 Client、Coordinator、Participant A、Participant B 之间完成一次跨 split 事务提交的时序。</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrow-cyan" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrow-emerald" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#34d399"/>
+    </marker>
+    <marker id="arrow-violet" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#a78bfa"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 28px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 13px; }
+      .actor { fill: #f8fafc; font-size: 15px; font-weight: 600; }
+      .label { fill: #e2e8f0; font-size: 13px; font-weight: 600; }
+      .small { fill: #cbd5e1; font-size: 11px; }
+      .tiny { fill: #94a3b8; font-size: 10px; }
+      .num { fill: #dbeafe; font-size: 10px; font-weight: 700; }
+    </style>
+  </defs>
+
+  <rect width="1480" height="1180" fill="#0f172a"/>
+  <rect width="1480" height="1180" fill="url(#grid)"/>
+
+  <text x="64" y="68" class="title">一条跨 split 事务是怎样提交的</text>
+  <text x="64" y="100" class="subtitle">时间自上而下，四条泳道分别代表 Client、Coordinator、Participant A、Participant B。</text>
+
+  <rect x="58" y="132" width="1364" height="954" rx="24" fill="rgba(15,23,42,0.58)" stroke="#334155" stroke-width="1.2"/>
+
+  <rect x="110" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="110" y="180" width="220" height="58" rx="12" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.6"/>
+  <text x="220" y="216" text-anchor="middle" class="actor">Client</text>
+  <line x1="220" y1="238" x2="220" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <rect x="430" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="430" y="180" width="220" height="58" rx="12" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.6"/>
+  <text x="540" y="216" text-anchor="middle" class="actor">Coordinator</text>
+  <line x1="540" y1="238" x2="540" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <rect x="750" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="750" y="180" width="220" height="58" rx="12" fill="rgba(76,29,149,0.40)" stroke="#a78bfa" stroke-width="1.6"/>
+  <text x="860" y="216" text-anchor="middle" class="actor">Participant A</text>
+  <line x1="860" y1="238" x2="860" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <rect x="1070" y="180" width="220" height="58" rx="12" fill="#0f172a"/>
+  <rect x="1070" y="180" width="220" height="58" rx="12" fill="rgba(120,53,15,0.28)" stroke="#fbbf24" stroke-width="1.6"/>
+  <text x="1180" y="216" text-anchor="middle" class="actor">Participant B</text>
+  <line x1="1180" y1="238" x2="1180" y2="1030" stroke="#334155" stroke-width="1" stroke-dasharray="6,4"/>
+
+  <rect x="535" y="292" width="10" height="660" rx="3" fill="rgba(6,78,59,0.55)" stroke="#34d399" stroke-width="1"/>
+  <rect x="855" y="428" width="10" height="392" rx="3" fill="rgba(76,29,149,0.55)" stroke="#a78bfa" stroke-width="1"/>
+  <rect x="1175" y="428" width="10" height="392" rx="3" fill="rgba(120,53,15,0.55)" stroke="#fbbf24" stroke-width="1"/>
+
+  <circle cx="202" cy="300" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="202" y="304" text-anchor="middle" class="num">1</text>
+  <line x1="220" y1="300" x2="540" y2="300" stroke="#22d3ee" stroke-width="2.2" marker-end="url(#arrow-cyan)"/>
+  <text x="380" y="286" text-anchor="middle" class="label">开始事务，读取一致视图</text>
+  <text x="380" y="316" text-anchor="middle" class="small">Client 发起读写事务，请求进入事务上下文</text>
+
+  <circle cx="522" cy="360" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="522" y="364" text-anchor="middle" class="num">2</text>
+  <line x1="540" y1="360" x2="860" y2="360" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+  <line x1="540" y1="392" x2="1180" y2="392" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+  <text x="700" y="346" text-anchor="middle" class="label">读取相关 split，识别参与者</text>
+  <text x="860" y="378" text-anchor="middle" class="tiny">读 split A</text>
+  <text x="1180" y="410" text-anchor="middle" class="tiny">读 split B</text>
+
+  <circle cx="202" cy="460" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="202" y="464" text-anchor="middle" class="num">3</text>
+  <line x1="220" y1="460" x2="540" y2="460" stroke="#22d3ee" stroke-width="2.2" marker-end="url(#arrow-cyan)"/>
+  <text x="380" y="446" text-anchor="middle" class="label">提交写入，确定协调者</text>
+  <text x="380" y="476" text-anchor="middle" class="small">Client 正式发起 commit，请 coordinator 推进事务</text>
+
+  <circle cx="522" cy="540" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="522" y="544" text-anchor="middle" class="num">4</text>
+  <line x1="540" y1="520" x2="860" y2="520" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+  <line x1="540" y1="560" x2="1180" y2="560" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+  <text x="700" y="506" text-anchor="middle" class="label">各参与者拿锁并进入 prepare</text>
+  <text x="860" y="538" text-anchor="middle" class="tiny">锁定 + prepare 复制</text>
+  <text x="1180" y="578" text-anchor="middle" class="tiny">锁定 + prepare 复制</text>
+
+  <circle cx="522" cy="654" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="522" y="658" text-anchor="middle" class="num">5</text>
+  <path d="M 540 650 L 610 650 L 610 694 L 540 694" fill="none" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+  <text x="680" y="662" class="label">协调者选择 commit timestamp</text>
+  <text x="680" y="688" class="small">只有所有参与者都 prepare 完成后，才选时间戳</text>
+
+  <circle cx="522" cy="762" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="522" y="766" text-anchor="middle" class="num">6</text>
+  <line x1="540" y1="740" x2="860" y2="740" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow-violet)"/>
+  <line x1="540" y1="784" x2="1180" y2="784" stroke="#34d399" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <text x="700" y="726" text-anchor="middle" class="label">commit 决定复制并广播</text>
+  <text x="860" y="758" text-anchor="middle" class="tiny">split A 收到 commit</text>
+  <text x="1180" y="802" text-anchor="middle" class="tiny">split B 收到 commit</text>
+
+  <circle cx="522" cy="874" r="13" fill="rgba(59,130,246,0.25)" stroke="#60a5fa" stroke-width="1.2"/>
+  <text x="522" y="878" text-anchor="middle" class="num">7</text>
+  <path d="M 540 870 L 618 870 L 618 914 L 540 914" fill="none" stroke="#fbbf24" stroke-width="2.2" marker-end="url(#arrow)"/>
+  <text x="686" y="882" class="label">commit wait</text>
+  <text x="686" y="908" class="small">等待所选 timestamp 在真实时间中已经过去</text>
+
+  <line x1="860" y1="950" x2="540" y2="950" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow-violet)"/>
+  <line x1="1180" y1="980" x2="540" y2="980" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="6,4" marker-end="url(#arrow)"/>
+  <line x1="540" y1="1012" x2="220" y2="1012" stroke="#34d399" stroke-width="1.8" stroke-dasharray="6,4" marker-end="url(#arrow-emerald)"/>
+  <text x="700" y="938" text-anchor="middle" class="small">Participant A：落成新版本并释放锁</text>
+  <text x="860" y="968" text-anchor="middle" class="small">Participant B：落成新版本并释放锁</text>
+  <text x="380" y="1000" text-anchor="middle" class="label">向 Client 返回“提交成功”</text>
+
+  <rect x="170" y="1042" width="1130" height="60" rx="16" fill="#0f172a"/>
+  <rect x="170" y="1042" width="1130" height="60" rx="16" fill="rgba(59,130,246,0.18)" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="735" y="1072" text-anchor="middle" class="label">这条时间线的关键不是“事务提交了”，而是“提交顺序、时间戳顺序、对外可见顺序”被统一起来了</text>
+  <text x="735" y="1094" text-anchor="middle" class="tiny">跨 split 事务贵，不只是因为多走几跳，而是因为锁、Paxos、2PC、commit wait 都在一条提交路径里叠加出现</text>
+</svg>

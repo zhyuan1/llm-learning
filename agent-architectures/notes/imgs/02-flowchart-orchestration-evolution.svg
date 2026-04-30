@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 480">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 26px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 14px; }
+      .card-title { fill: white; font-size: 14px; font-weight: 700; }
+      .card-sub { fill: #cbd5e1; font-size: 11px; }
+      .note { fill: #e2e8f0; font-size: 12px; }
+      .hint { fill: #94a3b8; font-size: 12px; }
+      .arrow { stroke: #64748b; stroke-width: 2.2; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1400" height="480" fill="#0f172a"/>
+  <rect width="1400" height="480" fill="url(#grid)"/>
+
+  <text x="40" y="52" class="title">从“循环”到“流程”的升级路径</text>
+  <text x="40" y="78" class="subtitle">系统复杂度变高时，第一步升级通常不是更多 Agent，而是更强的编排能力</text>
+
+  <line x1="235" y1="225" x2="370" y2="225" class="arrow"/>
+  <line x1="505" y1="225" x2="640" y2="225" class="arrow"/>
+  <line x1="775" y1="225" x2="910" y2="225" class="arrow"/>
+  <line x1="1045" y1="225" x2="1180" y2="225" class="arrow"/>
+
+  <rect x="60" y="160" width="180" height="130" rx="14" fill="#0f172a"/>
+  <rect x="60" y="160" width="180" height="130" rx="14" fill="rgba(76,29,149,0.42)" stroke="#a78bfa" stroke-width="1.8"/>
+  <text x="150" y="196" class="card-title" text-anchor="middle">1. 单 Agent loop</text>
+  <text x="150" y="224" class="card-sub" text-anchor="middle">LLM + tools</text>
+  <text x="150" y="244" class="card-sub" text-anchor="middle">retrieval + memory</text>
+  <text x="150" y="264" class="card-sub" text-anchor="middle">读任务 → 调工具 → 再判断</text>
+
+  <rect x="330" y="140" width="180" height="170" rx="14" fill="#0f172a"/>
+  <rect x="330" y="140" width="180" height="170" rx="14" fill="rgba(8,51,68,0.42)" stroke="#22d3ee" stroke-width="1.8"/>
+  <text x="420" y="176" class="card-title" text-anchor="middle">2. Workflow patterns</text>
+  <text x="420" y="206" class="card-sub" text-anchor="middle">prompt chaining</text>
+  <text x="420" y="226" class="card-sub" text-anchor="middle">routing</text>
+  <text x="420" y="246" class="card-sub" text-anchor="middle">parallelization</text>
+  <text x="420" y="266" class="card-sub" text-anchor="middle">evaluator-optimizer</text>
+
+  <rect x="600" y="160" width="180" height="130" rx="14" fill="#0f172a"/>
+  <rect x="600" y="160" width="180" height="130" rx="14" fill="rgba(6,78,59,0.42)" stroke="#34d399" stroke-width="1.8"/>
+  <text x="690" y="196" class="card-title" text-anchor="middle">3. Graph 编排</text>
+  <text x="690" y="224" class="card-sub" text-anchor="middle">nodes + edges</text>
+  <text x="690" y="244" class="card-sub" text-anchor="middle">state 成为一等公民</text>
+  <text x="690" y="264" class="card-sub" text-anchor="middle">路径显式、状态显式</text>
+
+  <rect x="870" y="140" width="180" height="170" rx="14" fill="#0f172a"/>
+  <rect x="870" y="140" width="180" height="170" rx="14" fill="rgba(120,53,15,0.32)" stroke="#fbbf24" stroke-width="1.8"/>
+  <text x="960" y="176" class="card-title" text-anchor="middle">4. 可恢复执行</text>
+  <text x="960" y="206" class="card-sub" text-anchor="middle">checkpoint</text>
+  <text x="960" y="226" class="card-sub" text-anchor="middle">interrupt</text>
+  <text x="960" y="246" class="card-sub" text-anchor="middle">human-in-the-loop</text>
+  <text x="960" y="266" class="card-sub" text-anchor="middle">失败后从中间恢复</text>
+
+  <rect x="1140" y="160" width="200" height="130" rx="14" fill="#0f172a"/>
+  <rect x="1140" y="160" width="200" height="130" rx="14" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.8"/>
+  <text x="1240" y="196" class="card-title" text-anchor="middle">5. 生产级流程系统</text>
+  <text x="1240" y="224" class="card-sub" text-anchor="middle">可恢复 · 可追踪</text>
+  <text x="1240" y="244" class="card-sub" text-anchor="middle">可审批 · 可审计</text>
+  <text x="1240" y="264" class="card-sub" text-anchor="middle">面向长时运行任务</text>
+
+  <rect x="160" y="350" width="1080" height="72" rx="14" fill="rgba(15,23,42,0.92)" stroke="#334155" stroke-width="1.2"/>
+  <text x="700" y="382" class="note" text-anchor="middle">越往右，灵活性通常下降，但可控性、可恢复性、可审计性会逐步上升</text>
+  <text x="700" y="405" class="hint" text-anchor="middle">文章想强调的是：升级的首先是编排能力，不一定是 Agent 数量</text>
+</svg>

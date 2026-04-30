@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1360 820" role="img" aria-labelledby="title desc">
+  <title id="title">commit wait 如何保证 external consistency</title>
+  <desc id="desc">展示事务 T1 在返回成功前执行 commit wait，从而保证外部观察顺序与提交时间戳顺序一致。</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrow-cyan" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#22d3ee"/>
+    </marker>
+    <marker id="arrow-emerald" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#34d399"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 28px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 13px; }
+      .label { fill: #e2e8f0; font-size: 15px; font-weight: 600; }
+      .small { fill: #cbd5e1; font-size: 12px; }
+      .tiny { fill: #94a3b8; font-size: 11px; }
+      .accent { fill: #67e8f9; font-size: 13px; font-weight: 600; }
+      .warn { fill: #fecaca; font-size: 12px; }
+    </style>
+  </defs>
+
+  <rect width="1360" height="820" fill="#0f172a"/>
+  <rect width="1360" height="820" fill="url(#grid)"/>
+
+  <text x="64" y="68" class="title">commit wait 如何保证 external consistency</text>
+  <text x="64" y="100" class="subtitle">先对外返回成功的事务，不能在时间戳顺序上“看起来更晚”。</text>
+
+  <rect x="62" y="134" width="1236" height="470" rx="24" fill="rgba(15,23,42,0.58)" stroke="#334155" stroke-width="1.2"/>
+
+  <line x1="120" y1="220" x2="1220" y2="220" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="1232" y="226" class="label">真实时间</text>
+
+  <line x1="180" y1="328" x2="1180" y2="328" stroke="#334155" stroke-width="1" stroke-dasharray="7,6"/>
+  <line x1="180" y1="438" x2="1180" y2="438" stroke="#334155" stroke-width="1" stroke-dasharray="7,6"/>
+  <text x="120" y="334" class="label">T1</text>
+  <text x="120" y="444" class="label">T2</text>
+
+  <line x1="330" y1="184" x2="330" y2="484" stroke="#22d3ee" stroke-width="2" stroke-dasharray="6,6"/>
+  <line x1="520" y1="184" x2="520" y2="484" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6,6"/>
+  <line x1="700" y1="184" x2="700" y2="484" stroke="#34d399" stroke-width="2" stroke-dasharray="6,6"/>
+  <line x1="920" y1="184" x2="920" y2="484" stroke="#34d399" stroke-width="2" stroke-dasharray="6,6"/>
+
+  <text x="330" y="170" text-anchor="middle" class="small">T1 选定 timestamp = 12</text>
+  <text x="520" y="170" text-anchor="middle" class="small">12 已成为过去</text>
+  <text x="700" y="170" text-anchor="middle" class="small">T1 对外返回成功</text>
+  <text x="920" y="170" text-anchor="middle" class="small">T2 选定 timestamp = 16</text>
+
+  <rect x="250" y="294" width="450" height="68" rx="16" fill="#0f172a"/>
+  <rect x="250" y="294" width="450" height="68" rx="16" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.6"/>
+  <text x="475" y="322" text-anchor="middle" class="label">T1 commit wait</text>
+  <text x="475" y="347" text-anchor="middle" class="small">在返回成功前，先等到 timestamp=12 在真实时间里已经过去</text>
+
+  <path d="M 702 328 L 918 438" fill="none" stroke="#34d399" stroke-width="2.4" marker-end="url(#arrow-emerald)"/>
+  <rect x="808" y="394" width="220" height="62" rx="14" fill="#0f172a"/>
+  <rect x="808" y="394" width="220" height="62" rx="14" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="918" y="420" text-anchor="middle" class="label">T2 后开始提交</text>
+  <text x="918" y="444" text-anchor="middle" class="small">因此拿到更晚的 timestamp</text>
+
+  <path d="M 330 248 L 330 294" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <path d="M 520 248 L 520 294" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M 700 248 L 700 294" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+  <path d="M 920 248 L 920 394" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-emerald)"/>
+
+  <rect x="210" y="506" width="940" height="72" rx="18" fill="#0f172a"/>
+  <rect x="210" y="506" width="940" height="72" rx="18" fill="rgba(59,130,246,0.22)" stroke="#60a5fa" stroke-width="1.6"/>
+  <text x="680" y="536" text-anchor="middle" class="label">external consistency 要求</text>
+  <text x="680" y="562" text-anchor="middle" class="small">如果 T1 已经先被外部观察为完成，那么之后开始的 T2 不能拿到一个“看起来早于 T1”的 timestamp</text>
+
+  <rect x="1010" y="630" width="280" height="136" rx="18" fill="#0f172a"/>
+  <rect x="1010" y="630" width="280" height="136" rx="18" fill="rgba(136,19,55,0.36)" stroke="#fb7185" stroke-width="1.6"/>
+  <text x="1150" y="664" text-anchor="middle" class="label">没有 commit wait</text>
+  <text x="1150" y="690" text-anchor="middle" class="warn">观察顺序可能先看到 T1 成功</text>
+  <text x="1150" y="714" text-anchor="middle" class="warn">但数据库里却让 T2 的 timestamp 更早</text>
+  <text x="1150" y="740" text-anchor="middle" class="warn">这会让快照读出来的世界和用户看到的顺序冲突</text>
+  <line x1="1048" y1="650" x2="1252" y2="748" stroke="#fb7185" stroke-width="4.5"/>
+  <line x1="1252" y1="650" x2="1048" y2="748" stroke="#fb7185" stroke-width="4.5"/>
+
+  <text x="220" y="646" class="accent">读图顺序：</text>
+  <text x="220" y="672" class="small">1) T1 先拿到提交时间戳；2) 但它不会立刻返回成功；3) 要先等这个时间戳在真实时间里过去；</text>
+  <text x="220" y="696" class="small">4) 只有这样，后面开始的 T2 才不会在时间戳顺序上跑到 T1 前面。</text>
+</svg>

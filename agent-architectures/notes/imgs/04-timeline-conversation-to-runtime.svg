@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 560">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 26px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 14px; }
+      .head { fill: white; font-size: 14px; font-weight: 700; }
+      .sub { fill: #cbd5e1; font-size: 11px; }
+      .hint { fill: #e2e8f0; font-size: 12px; }
+      .muted { fill: #94a3b8; font-size: 11px; }
+      .axis { stroke: #64748b; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1400" height="560" fill="#0f172a"/>
+  <rect width="1400" height="560" fill="url(#grid)"/>
+
+  <text x="40" y="52" class="title">多 Agent 为什么会从“对话设计”走向“运行时设计”</text>
+  <text x="40" y="78" class="subtitle">前半段主要贵在推理，后半段主要贵在系统</text>
+
+  <line x1="140" y1="260" x2="1260" y2="260" class="axis"/>
+
+  <circle cx="240" cy="260" r="18" fill="#0f172a" stroke="#a78bfa" stroke-width="2"/>
+  <circle cx="520" cy="260" r="18" fill="#0f172a" stroke="#22d3ee" stroke-width="2"/>
+  <circle cx="800" cy="260" r="18" fill="#0f172a" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="1080" cy="260" r="18" fill="#0f172a" stroke="#fb7185" stroke-width="2"/>
+
+  <rect x="145" y="120" width="190" height="102" rx="12" fill="rgba(76,29,149,0.42)" stroke="#a78bfa" stroke-width="1.8"/>
+  <text x="240" y="154" class="head" text-anchor="middle">1. Conversation-based</text>
+  <text x="240" y="180" class="sub" text-anchor="middle">multi-agent dialogue</text>
+  <text x="240" y="200" class="sub" text-anchor="middle">角色协商 · 互相纠错</text>
+
+  <rect x="425" y="315" width="190" height="108" rx="12" fill="rgba(8,51,68,0.42)" stroke="#22d3ee" stroke-width="1.8"/>
+  <text x="520" y="350" class="head" text-anchor="middle">2. Message / State</text>
+  <text x="520" y="376" class="sub" text-anchor="middle">消息传递</text>
+  <text x="520" y="396" class="sub" text-anchor="middle">状态同步</text>
+  <text x="520" y="416" class="sub" text-anchor="middle">角色和节点快速增多</text>
+
+  <rect x="705" y="120" width="190" height="118" rx="12" fill="rgba(120,53,15,0.32)" stroke="#fbbf24" stroke-width="1.8"/>
+  <text x="800" y="154" class="head" text-anchor="middle">3. Runtime features</text>
+  <text x="800" y="180" class="sub" text-anchor="middle">graph workflow</text>
+  <text x="800" y="200" class="sub" text-anchor="middle">checkpoint</text>
+  <text x="800" y="220" class="sub" text-anchor="middle">observability · middleware</text>
+
+  <rect x="980" y="315" width="200" height="110" rx="12" fill="rgba(136,19,55,0.4)" stroke="#fb7185" stroke-width="1.8"/>
+  <text x="1080" y="350" class="head" text-anchor="middle">4. Enterprise runtime</text>
+  <text x="1080" y="376" class="sub" text-anchor="middle">hosting · deployment</text>
+  <text x="1080" y="396" class="sub" text-anchor="middle">多语言 · DevUI</text>
+  <text x="1080" y="416" class="sub" text-anchor="middle">企业级可观测与集成</text>
+
+  <text x="240" y="292" class="muted" text-anchor="middle">重点还在 prompt 协作</text>
+  <text x="520" y="286" class="muted" text-anchor="middle">开始碰到分布式问题</text>
+  <text x="800" y="292" class="muted" text-anchor="middle">系统特性逐渐浮出水面</text>
+  <text x="1080" y="286" class="muted" text-anchor="middle">已经是运行时平台问题</text>
+
+  <rect x="330" y="455" width="740" height="66" rx="14" fill="rgba(15,23,42,0.92)" stroke="#334155" stroke-width="1.2"/>
+  <text x="700" y="484" class="hint" text-anchor="middle">成本迁移：对话回合数和角色数量 → 消息系统、状态同步、部署、观测、跨语言支持</text>
+  <text x="700" y="506" class="muted" text-anchor="middle">这就是文章在第五节想说明的“从提示词工程问题变成系统工程问题”</text>
+</svg>

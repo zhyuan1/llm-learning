@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">MVCC、safe time 与读路径</title>
+  <desc id="desc">展示版本链、safe time 阈值，以及 stale read 和 strong read 的不同路径。</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#94a3b8"/>
+    </marker>
+    <marker id="arrow-emerald" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#34d399"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="8" refX="10" refY="4" orient="auto">
+      <polygon points="0 0, 12 4, 0 8" fill="#fb923c"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 28px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 13px; }
+      .label { fill: #e2e8f0; font-size: 15px; font-weight: 600; }
+      .small { fill: #cbd5e1; font-size: 12px; }
+      .tiny { fill: #94a3b8; font-size: 11px; }
+      .accent { fill: #67e8f9; font-size: 13px; font-weight: 600; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="820" fill="#0f172a"/>
+  <rect width="1400" height="820" fill="url(#grid)"/>
+
+  <text x="64" y="68" class="title">MVCC、safe time 与读路径</text>
+  <text x="64" y="100" class="subtitle">能不能在本地副本直接读，关键看读取时间点是否早于 safe time。</text>
+
+  <rect x="58" y="134" width="1284" height="600" rx="24" fill="rgba(15,23,42,0.58)" stroke="#334155" stroke-width="1.2"/>
+
+  <text x="214" y="188" class="label">版本链（同一 key 的多个版本）</text>
+  <line x1="120" y1="330" x2="540" y2="330" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="548" y="336" class="small">时间戳变大</text>
+
+  <rect x="132" y="270" width="108" height="86" rx="18" fill="#0f172a"/>
+  <rect x="132" y="270" width="108" height="86" rx="18" fill="rgba(76,29,149,0.40)" stroke="#a78bfa" stroke-width="1.6"/>
+  <text x="186" y="305" text-anchor="middle" class="label">v1</text>
+  <text x="186" y="332" text-anchor="middle" class="small">@ t10</text>
+
+  <rect x="272" y="246" width="108" height="110" rx="18" fill="#0f172a"/>
+  <rect x="272" y="246" width="108" height="110" rx="18" fill="rgba(76,29,149,0.40)" stroke="#a78bfa" stroke-width="1.6"/>
+  <text x="326" y="290" text-anchor="middle" class="label">v2</text>
+  <text x="326" y="318" text-anchor="middle" class="small">@ t20</text>
+  <text x="326" y="342" text-anchor="middle" class="tiny">t22 读到它</text>
+
+  <rect x="412" y="216" width="108" height="140" rx="18" fill="#0f172a"/>
+  <rect x="412" y="216" width="108" height="140" rx="18" fill="rgba(76,29,149,0.40)" stroke="#a78bfa" stroke-width="1.6"/>
+  <text x="466" y="270" text-anchor="middle" class="label">v3</text>
+  <text x="466" y="298" text-anchor="middle" class="small">@ t30</text>
+  <text x="466" y="324" text-anchor="middle" class="tiny">更晚版本</text>
+
+  <text x="650" y="188" class="label">副本已知的安全边界</text>
+  <rect x="584" y="246" width="250" height="218" rx="24" fill="#0f172a"/>
+  <rect x="584" y="246" width="250" height="218" rx="24" fill="rgba(8,51,68,0.40)" stroke="#22d3ee" stroke-width="1.6"/>
+  <text x="709" y="286" text-anchor="middle" class="label">Replica</text>
+  <text x="709" y="316" text-anchor="middle" class="small">已应用日志到某个位置</text>
+  <line x1="626" y1="368" x2="792" y2="368" stroke="#fbbf24" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="709" y="354" text-anchor="middle" class="accent">safe time = t25</text>
+  <text x="709" y="400" text-anchor="middle" class="small">副本能保证：不晚于 t25 的世界</text>
+  <text x="709" y="426" text-anchor="middle" class="small">已经完整可见、可以安全回答</text>
+
+  <path d="M 520 302 C 548 302, 560 302, 584 302" fill="none" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+  <polygon points="980,330 1060,260 1140,330 1060,400" fill="#0f172a"/>
+  <polygon points="980,330 1060,260 1140,330 1060,400" fill="rgba(120,53,15,0.26)" stroke="#fbbf24" stroke-width="1.7"/>
+  <text x="1060" y="318" text-anchor="middle" class="label">读取时间</text>
+  <text x="1060" y="340" text-anchor="middle" class="small">&lt;= safe time ?</text>
+
+  <path d="M 834 355 C 900 355, 925 355, 980 340" fill="none" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="902" y="334" text-anchor="middle" class="tiny">决定能不能本地读</text>
+
+  <path d="M 1140 320 L 1270 320" fill="none" stroke="#34d399" stroke-width="2.4" marker-end="url(#arrow-emerald)"/>
+  <text x="1204" y="304" text-anchor="middle" class="small">是：t22 &lt;= t25</text>
+  <rect x="1180" y="238" width="132" height="160" rx="18" fill="#0f172a"/>
+  <rect x="1180" y="238" width="132" height="160" rx="18" fill="rgba(6,78,59,0.40)" stroke="#34d399" stroke-width="1.6"/>
+  <text x="1246" y="274" text-anchor="middle" class="label">stale read</text>
+  <text x="1246" y="302" text-anchor="middle" class="small">at t22</text>
+  <text x="1246" y="336" text-anchor="middle" class="small">本地副本直接返回</text>
+  <text x="1246" y="362" text-anchor="middle" class="tiny">可见版本：v2@t20</text>
+
+  <path d="M 1060 400 L 1060 546 L 1180 546" fill="none" stroke="#fb923c" stroke-width="2.4" marker-end="url(#arrow-orange)"/>
+  <text x="1120" y="528" text-anchor="middle" class="small">否：t30 &gt; safe time</text>
+  <rect x="1180" y="472" width="162" height="162" rx="18" fill="#0f172a"/>
+  <rect x="1180" y="472" width="162" height="162" rx="18" fill="rgba(251,146,60,0.22)" stroke="#fb923c" stroke-width="1.6"/>
+  <text x="1261" y="508" text-anchor="middle" class="label">strong read</text>
+  <text x="1261" y="536" text-anchor="middle" class="small">at t30</text>
+  <text x="1261" y="568" text-anchor="middle" class="small">先确认 freshness</text>
+  <text x="1261" y="594" text-anchor="middle" class="tiny">通常要经 leader / 协调路径</text>
+
+  <rect x="130" y="558" width="920" height="110" rx="20" fill="#0f172a"/>
+  <rect x="130" y="558" width="920" height="110" rx="20" fill="rgba(59,130,246,0.18)" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="590" y="594" text-anchor="middle" class="label">这张图想表达的核心</text>
+  <text x="590" y="620" text-anchor="middle" class="small">MVCC 让同一个 key 可以保留多个带时间戳的版本；safe time 则告诉副本：你最晚能安全回答到哪里。</text>
+  <text x="590" y="646" text-anchor="middle" class="small">所以 stale read 可以显式换取更轻的本地读路径，而 strong read 需要额外确认“我读到的是最新可见世界”。</text>
+</svg>

@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 820">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+    </pattern>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { fill: #f8fafc; font-size: 26px; font-weight: 700; }
+      .subtitle { fill: #94a3b8; font-size: 14px; }
+      .head { fill: white; font-size: 16px; font-weight: 700; }
+      .small { fill: #cbd5e1; font-size: 11px; }
+      .label { fill: #e2e8f0; font-size: 12px; font-weight: 600; }
+      .bullet { fill: #cbd5e1; font-size: 12px; }
+      .muted { fill: #94a3b8; font-size: 11px; }
+      .line { stroke: #64748b; stroke-width: 2; marker-end: url(#arrow); }
+      .dashed { stroke: #475569; stroke-width: 1.5; stroke-dasharray: 5 5; }
+    </style>
+  </defs>
+  <rect width="1500" height="820" fill="#0f172a"/>
+  <rect width="1500" height="820" fill="url(#grid)"/>
+
+  <text x="40" y="52" class="title">Multi-agent 不是一种形态，而是三种常见协作方式</text>
+  <text x="40" y="78" class="subtitle">重点差异不只是“有几个 Agent”，而是控制权放在哪里、用户面对谁、系统最擅长什么任务</text>
+
+  <rect x="60" y="120" width="430" height="630" rx="18" fill="rgba(8,51,68,0.42)" stroke="#22d3ee" stroke-width="1.8"/>
+  <rect x="535" y="120" width="430" height="630" rx="18" fill="rgba(120,53,15,0.32)" stroke="#fbbf24" stroke-width="1.8"/>
+  <rect x="1010" y="120" width="430" height="630" rx="18" fill="rgba(6,78,59,0.42)" stroke="#34d399" stroke-width="1.8"/>
+
+  <text x="275" y="160" class="head" text-anchor="middle">Manager + agents as tools</text>
+  <text x="275" y="185" class="small" text-anchor="middle">控制权最集中，入口 Agent 统一收口</text>
+  <text x="750" y="160" class="head" text-anchor="middle">Handoff</text>
+  <text x="750" y="185" class="small" text-anchor="middle">用户被转交给不同 specialist</text>
+  <text x="1225" y="160" class="head" text-anchor="middle">Orchestrator-worker</text>
+  <text x="1225" y="185" class="small" text-anchor="middle">上层拆分问题，下层并行探索</text>
+
+  <rect x="160" y="230" width="130" height="54" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="225" y="262" class="label" text-anchor="middle">用户</text>
+  <rect x="160" y="325" width="130" height="54" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="225" y="357" class="label" text-anchor="middle">manager</text>
+  <line x1="225" y1="284" x2="225" y2="325" class="line"/>
+  <rect x="95" y="435" width="110" height="48" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="225" y="435" width="110" height="48" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="355" y="435" width="110" height="48" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="150" y="463" class="small" text-anchor="middle">specialist A</text>
+  <text x="280" y="463" class="small" text-anchor="middle">specialist B</text>
+  <text x="410" y="463" class="small" text-anchor="middle">specialist C</text>
+  <line x1="225" y1="379" x2="150" y2="435" class="line"/>
+  <line x1="225" y1="379" x2="280" y2="435" class="line"/>
+  <line x1="225" y1="379" x2="410" y2="435" class="line"/>
+
+  <rect x="635" y="230" width="130" height="54" rx="8" fill="#0f172a" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="700" y="262" class="label" text-anchor="middle">用户</text>
+  <rect x="735" y="325" width="150" height="54" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="810" y="357" class="label" text-anchor="middle">router agent</text>
+  <line x1="745" y1="284" x2="800" y2="325" class="line"/>
+  <rect x="590" y="435" width="130" height="52" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="790" y="435" width="130" height="52" rx="8" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="655" y="466" class="small" text-anchor="middle">specialist A</text>
+  <text x="855" y="466" class="small" text-anchor="middle">specialist B</text>
+  <line x1="800" y1="379" x2="655" y2="435" class="line"/>
+  <line x1="820" y1="379" x2="855" y2="435" class="line"/>
+  <line x1="655" y1="487" x2="655" y2="540" class="dashed"/>
+  <line x1="855" y1="487" x2="855" y2="540" class="dashed"/>
+  <text x="755" y="560" class="muted" text-anchor="middle">用户后续直接和 specialist 交互</text>
+
+  <rect x="1120" y="230" width="170" height="54" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+  <text x="1205" y="262" class="label" text-anchor="middle">lead / orchestrator</text>
+  <rect x="1035" y="360" width="110" height="48" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <rect x="1150" y="360" width="110" height="48" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <rect x="1265" y="360" width="110" height="48" rx="8" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="1090" y="388" class="small" text-anchor="middle">worker A</text>
+  <text x="1205" y="388" class="small" text-anchor="middle">worker B</text>
+  <text x="1320" y="388" class="small" text-anchor="middle">worker C</text>
+  <line x1="1205" y1="284" x2="1090" y2="360" class="line"/>
+  <line x1="1205" y1="284" x2="1205" y2="360" class="line"/>
+  <line x1="1205" y1="284" x2="1320" y2="360" class="line"/>
+  <rect x="1115" y="485" width="180" height="54" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="1205" y="517" class="label" text-anchor="middle">synthesis / 汇总</text>
+  <line x1="1090" y1="408" x2="1175" y2="485" class="line"/>
+  <line x1="1205" y1="408" x2="1205" y2="485" class="line"/>
+  <line x1="1320" y1="408" x2="1235" y2="485" class="line"/>
+
+  <text x="110" y="615" class="label">最适合</text>
+  <text x="110" y="645" class="bullet">• 统一口径</text>
+  <text x="110" y="668" class="bullet">• 集中控制</text>
+  <text x="110" y="691" class="bullet">• guardrails 收口</text>
+  <text x="300" y="615" class="label">常见失效</text>
+  <text x="300" y="645" class="bullet">• specialist 变昂贵工具</text>
+  <text x="300" y="668" class="bullet">• 调用层层叠加</text>
+
+  <text x="585" y="615" class="label">最适合</text>
+  <text x="585" y="645" class="bullet">• 明确分流</text>
+  <text x="585" y="668" class="bullet">• 专家角色清楚</text>
+  <text x="585" y="691" class="bullet">• 用户能理解切换</text>
+  <text x="790" y="615" class="label">常见失效</text>
+  <text x="790" y="645" class="bullet">• 误分流</text>
+  <text x="790" y="668" class="bullet">• 多 specialist 来回转交</text>
+
+  <text x="1060" y="615" class="label">最适合</text>
+  <text x="1060" y="645" class="bullet">• 多路探索</text>
+  <text x="1060" y="668" class="bullet">• 并行搜索 / 阅读</text>
+  <text x="1060" y="691" class="bullet">• 最终综合</text>
+  <text x="1265" y="615" class="label">常见失效</text>
+  <text x="1265" y="645" class="bullet">• 拆分重叠</text>
+  <text x="1265" y="668" class="bullet">• 汇总失真</text>
+  <text x="1265" y="691" class="bullet">• 慢 worker 拖全局</text>
+</svg>

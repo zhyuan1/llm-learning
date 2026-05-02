@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 430">
+    <defs>
+        <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+        </pattern>
+        <marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+        </marker>
+        <marker id="gr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+    <style>
+        text { font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
+        .ti { font-size: 22px; font-weight: 700; fill: #f8fafc; }
+        .sub { font-size: 12px; fill: #94a3b8; }
+        .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+        .sm { font-size: 11px; fill: #94a3b8; }
+        .cap { font-size: 11px; fill: #64748b; }
+    </style>
+    <rect width="1080" height="430" fill="#0f172a"/>
+    <rect width="1080" height="430" fill="url(#g)" opacity="0.7"/>
+    <rect x="0" y="0" width="1080" height="88" fill="#0a1525"/>
+    <text class="ti" x="40" y="40">有限上下文窗口 vs 长期任务</text>
+    <text class="sub" x="40" y="64">Agent 记忆设计：哪些历史进入本轮上下文</text>
+    <line x1="0" y1="88" x2="1080" y2="88" stroke="#1e293b" stroke-width="1"/>
+    <rect x="55" y="108" width="220" height="195" rx="10" fill="#0a1525"/>
+    <rect x="55" y="108" width="220" height="195" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee" stroke-width="1.5"/>
+    <rect x="365" y="108" width="240" height="195" rx="10" fill="#0a1525"/>
+    <rect x="365" y="108" width="240" height="195" rx="10" fill="rgba(120,53,15,.55)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <rect x="710" y="88" width="310" height="235" rx="10" fill="#0a1525"/>
+    <rect x="710" y="88" width="310" height="235" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <path d="M275 205 L365 205" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M605 205 L710 205" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M865 323 C865 395,480 400,485 303" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <text class="h" x="165.0" y="134" text-anchor="middle">Context Window</text>
+    <text class="sm" x="165.0" y="152" text-anchor="middle">本轮可见</text>
+    <text class="sm" x="165.0" y="169" text-anchor="middle">system prompt / 对话</text>
+    <text class="sm" x="165.0" y="186" text-anchor="middle">工具结果 / 摘要</text>
+    <text class="h" x="485.0" y="134" text-anchor="middle">Memory System</text>
+    <text class="sm" x="485.0" y="152" text-anchor="middle">常驻 / 按需召回</text>
+    <text class="sm" x="485.0" y="169" text-anchor="middle">写入 / 晋升</text>
+    <text class="sm" x="485.0" y="186" text-anchor="middle">压缩 / 淘汰</text>
+    <text class="h" x="865.0" y="114" text-anchor="middle">长期任务流</text>
+    <text class="sm" x="865.0" y="132" text-anchor="middle">昨天偏好</text>
+    <text class="sm" x="865.0" y="149" text-anchor="middle">上周项目</text>
+    <text class="sm" x="865.0" y="166" text-anchor="middle">历史决策</text>
+    <text class="sm" x="865.0" y="183" text-anchor="middle">未来任务</text>
+    <text class="cap" x="540" y="415" text-anchor="middle">记住，不等于已经进入本轮上下文</text>
+</svg>

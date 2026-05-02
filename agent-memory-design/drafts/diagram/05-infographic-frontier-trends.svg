@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 500">
+    <defs>
+        <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+        </pattern>
+        <marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+        </marker>
+        <marker id="gr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+    <style>
+        text { font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
+        .ti { font-size: 22px; font-weight: 700; fill: #f8fafc; }
+        .sub { font-size: 12px; fill: #94a3b8; }
+        .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+        .sm { font-size: 11px; fill: #94a3b8; }
+        .cap { font-size: 11px; fill: #64748b; }
+    </style>
+    <rect width="1080" height="500" fill="#0f172a"/>
+    <rect width="1080" height="500" fill="url(#g)" opacity="0.7"/>
+    <rect x="0" y="0" width="1080" height="88" fill="#0a1525"/>
+    <text class="ti" x="40" y="40">Agent Memory 的 5 个前沿方向</text>
+    <text class="sub" x="40" y="64">从存历史、搜历史，走向组织历史、更新历史、解释历史</text>
+    <line x1="0" y1="88" x2="1080" y2="88" stroke="#1e293b" stroke-width="1"/>
+    <rect x="52" y="115" width="175" height="200" rx="10" fill="#0a1525"/>
+    <rect x="52" y="115" width="175" height="200" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text class="h" x="139.5" y="141" text-anchor="middle">A-Mem</text>
+    <text class="sm" x="139.5" y="159" text-anchor="middle">动态链接与演化</text>
+    <text class="sm" x="139.5" y="176" text-anchor="middle">Zettelkasten 网络</text>
+    <rect x="252" y="115" width="175" height="200" rx="10" fill="#0a1525"/>
+    <rect x="252" y="115" width="175" height="200" rx="10" fill="rgba(6,78,59,.55)" stroke="#34d399"
+            stroke-width="1.5"/>
+    <text class="h" x="339.5" y="141" text-anchor="middle">MemoryOS</text>
+    <text class="sm" x="339.5" y="159" text-anchor="middle">short/mid/long 三层</text>
+    <text class="sm" x="339.5" y="176" text-anchor="middle">中期缓冲</text>
+    <rect x="452" y="115" width="175" height="200" rx="10" fill="#0a1525"/>
+    <rect x="452" y="115" width="175" height="200" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="539.5" y="141" text-anchor="middle">Zep/Graphiti</text>
+    <text class="sm" x="539.5" y="159" text-anchor="middle">Temporal Context</text>
+    <text class="sm" x="539.5" y="176" text-anchor="middle">时间窗口 + 溯源</text>
+    <rect x="652" y="115" width="175" height="200" rx="10" fill="#0a1525"/>
+    <rect x="652" y="115" width="175" height="200" rx="10" fill="rgba(120,53,15,.55)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text class="h" x="739.5" y="141" text-anchor="middle">Mem0</text>
+    <text class="sm" x="739.5" y="159" text-anchor="middle">多信号检索融合</text>
+    <text class="sm" x="739.5" y="176" text-anchor="middle">semantic+BM25+entity</text>
+    <rect x="852" y="115" width="175" height="200" rx="10" fill="#0a1525"/>
+    <rect x="852" y="115" width="175" height="200" rx="10" fill="rgba(136,19,55,.55)" stroke="#fb7185"
+            stroke-width="1.5"/>
+    <text class="h" x="939.5" y="141" text-anchor="middle">MIRIX</text>
+    <text class="sm" x="939.5" y="159" text-anchor="middle">多模态 + 多 agent</text>
+    <text class="sm" x="939.5" y="176" text-anchor="middle">屏幕/图像/语音</text>
+    <circle cx="139" cy="283" r="20" fill="none" stroke="#22d3ee" stroke-width="2"/>
+    <text class="h" x="139" y="288" text-anchor="middle" fill="#22d3ee">1</text>
+    <circle cx="339" cy="283" r="20" fill="none" stroke="#34d399" stroke-width="2"/>
+    <text class="h" x="339" y="288" text-anchor="middle" fill="#34d399">2</text>
+    <circle cx="539" cy="283" r="20" fill="none" stroke="#a78bfa" stroke-width="2"/>
+    <text class="h" x="539" y="288" text-anchor="middle" fill="#a78bfa">3</text>
+    <circle cx="739" cy="283" r="20" fill="none" stroke="#fbbf24" stroke-width="2"/>
+    <text class="h" x="739" y="288" text-anchor="middle" fill="#fbbf24">4</text>
+    <circle cx="939" cy="283" r="20" fill="none" stroke="#fb7185" stroke-width="2"/>
+    <text class="h" x="939" y="288" text-anchor="middle" fill="#fb7185">5</text>
+    <rect x="215" y="368" width="650" height="68" rx="10" fill="#0a1525"/>
+    <rect x="215" y="368" width="650" height="68" rx="10" fill="rgba(30,41,59,.85)" stroke="#475569"
+            stroke-width="1.5"/>
+    <text class="h" x="540.0" y="394" text-anchor="middle">共同趋势</text>
+    <text class="sm" x="540.0" y="412" text-anchor="middle">结构化、时间性、实体链接、中间层、多模态、专门记忆 agent</text>
+</svg>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 465">
+    <defs>
+        <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+        </pattern>
+        <marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+        </marker>
+        <marker id="gr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+    <style>
+        text { font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
+        .ti { font-size: 22px; font-weight: 700; fill: #f8fafc; }
+        .sub { font-size: 12px; fill: #94a3b8; }
+        .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+        .sm { font-size: 11px; fill: #94a3b8; }
+        .cap { font-size: 11px; fill: #64748b; }
+    </style>
+    <rect width="1080" height="465" fill="#0f172a"/>
+    <rect width="1080" height="465" fill="url(#g)" opacity="0.7"/>
+    <rect x="0" y="0" width="1080" height="88" fill="#0a1525"/>
+    <text class="ti" x="40" y="40">OpenClaw：先召回，再回答</text>
+    <text class="sub" x="40" y="64">重点是相关记忆能否及时进入主回复</text>
+    <line x1="0" y1="88" x2="1080" y2="88" stroke="#1e293b" stroke-width="1"/>
+    <path d="M235 163 L265 163" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M465 163 L505 163" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M705 163 L750 163" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M230 347 L270 347" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <path d="M455 347 L495 347" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <path d="M680 347 L720 347" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <rect x="45" y="108" width="190" height="110" rx="10" fill="#0a1525"/>
+    <rect x="45" y="108" width="190" height="110" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text class="h" x="140.0" y="134" text-anchor="middle">用户消息</text>
+    <text class="sm" x="140.0" y="152" text-anchor="middle">当前问题</text>
+    <rect x="265" y="108" width="200" height="110" rx="10" fill="#0a1525"/>
+    <rect x="265" y="108" width="200" height="110" rx="10" fill="rgba(120,53,15,.55)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text class="h" x="365.0" y="134" text-anchor="middle">Active Memory</text>
+    <text class="sm" x="365.0" y="152" text-anchor="middle">blocking sub-agent</text>
+    <text class="sm" x="365.0" y="169" text-anchor="middle">先搜相关记忆</text>
+    <rect x="505" y="108" width="200" height="110" rx="10" fill="#0a1525"/>
+    <rect x="505" y="108" width="200" height="110" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee"
+            stroke-width="1.5"/>
+    <text class="h" x="605.0" y="134" text-anchor="middle">注入上下文</text>
+    <text class="sm" x="605.0" y="152" text-anchor="middle">hidden context</text>
+    <rect x="750" y="108" width="200" height="110" rx="10" fill="#0a1525"/>
+    <rect x="750" y="108" width="200" height="110" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee"
+            stroke-width="1.5"/>
+    <text class="h" x="850.0" y="134" text-anchor="middle">主 agent 回复</text>
+    <text class="sm" x="850.0" y="152" text-anchor="middle">带历史回答</text>
+    <rect x="45" y="300" width="185" height="95" rx="10" fill="#0a1525"/>
+    <rect x="45" y="300" width="185" height="95" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="137.5" y="326" text-anchor="middle">memory/YYYY-MM-DD</text>
+    <text class="sm" x="137.5" y="344" text-anchor="middle">短期日记</text>
+    <rect x="270" y="300" width="185" height="95" rx="10" fill="#0a1525"/>
+    <rect x="270" y="300" width="185" height="95" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="362.5" y="326" text-anchor="middle">memory flush</text>
+    <text class="sm" x="362.5" y="344" text-anchor="middle">压缩前抢救</text>
+    <rect x="495" y="300" width="185" height="95" rx="10" fill="#0a1525"/>
+    <rect x="495" y="300" width="185" height="95" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="587.5" y="326" text-anchor="middle">DREAMS.md</text>
+    <text class="sm" x="587.5" y="344" text-anchor="middle">候选复查</text>
+    <rect x="720" y="300" width="185" height="95" rx="10" fill="#0a1525"/>
+    <rect x="720" y="300" width="185" height="95" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="812.5" y="326" text-anchor="middle">MEMORY.md</text>
+    <text class="sm" x="812.5" y="344" text-anchor="middle">长期记忆</text>
+    <text class="cap" x="45" y="292">短期痕迹到长期记忆的晋升链路</text>
+</svg>

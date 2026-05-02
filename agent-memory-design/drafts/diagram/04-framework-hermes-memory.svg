@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 555">
+    <defs>
+        <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+        </pattern>
+        <marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+        </marker>
+        <marker id="gr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+    <style>
+        text { font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
+        .ti { font-size: 22px; font-weight: 700; fill: #f8fafc; }
+        .sub { font-size: 12px; fill: #94a3b8; }
+        .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+        .sm { font-size: 11px; fill: #94a3b8; }
+        .cap { font-size: 11px; fill: #64748b; }
+    </style>
+    <rect width="1080" height="555" fill="#0f172a"/>
+    <rect width="1080" height="555" fill="url(#g)" opacity="0.7"/>
+    <rect x="0" y="0" width="1080" height="88" fill="#0a1525"/>
+    <text class="ti" x="40" y="40">Hermes：小而稳的常驻记忆层</text>
+    <text class="sub" x="40" y="64">关键事实常驻，历史细节走旁路检索</text>
+    <line x1="0" y1="88" x2="1080" y2="88" stroke="#1e293b" stroke-width="1"/>
+    <path d="M260 165 C310 165,330 195,365 200" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M260 310 C310 310,330 258,365 248" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M620 223 L750 223" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M285 444 L395 444" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <path d="M595 444 L715 444" stroke="#34d399" stroke-width="2" fill="none" marker-end="url(#gr)"/>
+    <rect x="55" y="115" width="205" height="100" rx="10" fill="#0a1525"/>
+    <rect x="55" y="115" width="205" height="100" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="157.5" y="141" text-anchor="middle">MEMORY.md</text>
+    <text class="sm" x="157.5" y="159" text-anchor="middle">环境/项目/经验</text>
+    <text class="sm" x="157.5" y="176" text-anchor="middle">2200 chars</text>
+    <rect x="55" y="260" width="205" height="100" rx="10" fill="#0a1525"/>
+    <rect x="55" y="260" width="205" height="100" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="157.5" y="286" text-anchor="middle">USER.md</text>
+    <text class="sm" x="157.5" y="304" text-anchor="middle">用户画像/偏好</text>
+    <text class="sm" x="157.5" y="321" text-anchor="middle">1375 chars</text>
+    <rect x="365" y="158" width="255" height="130" rx="10" fill="#0a1525"/>
+    <rect x="365" y="158" width="255" height="130" rx="10" fill="rgba(120,53,15,.55)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text class="h" x="492.5" y="184" text-anchor="middle">Frozen Snapshot</text>
+    <text class="sm" x="492.5" y="202" text-anchor="middle">会话开始注入</text>
+    <text class="sm" x="492.5" y="219" text-anchor="middle">中途写入下次生效</text>
+    <rect x="750" y="158" width="240" height="130" rx="10" fill="#0a1525"/>
+    <rect x="750" y="158" width="240" height="130" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee"
+            stroke-width="1.5"/>
+    <text class="h" x="870.0" y="184" text-anchor="middle">System Prompt</text>
+    <text class="sm" x="870.0" y="202" text-anchor="middle">稳定前缀</text>
+    <text class="sm" x="870.0" y="219" text-anchor="middle">Prompt caching</text>
+    <rect x="65" y="400" width="220" height="88" rx="10" fill="#0a1525"/>
+    <rect x="65" y="400" width="220" height="88" rx="10" fill="rgba(30,41,59,.75)" stroke="#475569" stroke-width="1.5"/>
+    <text class="h" x="175.0" y="426" text-anchor="middle">SQLite + FTS5</text>
+    <text class="sm" x="175.0" y="444" text-anchor="middle">完整历史/旁路存储</text>
+    <rect x="395" y="400" width="200" height="88" rx="10" fill="#0a1525"/>
+    <rect x="395" y="400" width="200" height="88" rx="10" fill="rgba(6,78,59,.55)" stroke="#34d399" stroke-width="1.5"/>
+    <text class="h" x="495.0" y="426" text-anchor="middle">session_search</text>
+    <text class="sm" x="495.0" y="444" text-anchor="middle">搜索 + LLM 摘要</text>
+    <rect x="715" y="400" width="225" height="88" rx="10" fill="#0a1525"/>
+    <rect x="715" y="400" width="225" height="88" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text class="h" x="827.5" y="426" text-anchor="middle">按需进入上下文</text>
+    <text class="sm" x="827.5" y="444" text-anchor="middle">只在需要时召回</text>
+</svg>

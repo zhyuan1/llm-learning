@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 495">
+    <defs>
+        <pattern id="g" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/>
+        </pattern>
+        <marker id="ar" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#94a3b8"/>
+        </marker>
+        <marker id="gr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+            <polygon points="0 0,10 3.5,0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+    <style>
+        text { font-family: 'PingFang SC', 'Helvetica Neue', Arial, sans-serif; }
+        .ti { font-size: 22px; font-weight: 700; fill: #f8fafc; }
+        .sub { font-size: 12px; fill: #94a3b8; }
+        .h { font-size: 14px; font-weight: 700; fill: #f8fafc; }
+        .sm { font-size: 11px; fill: #94a3b8; }
+        .cap { font-size: 11px; fill: #64748b; }
+    </style>
+    <rect width="1080" height="495" fill="#0f172a"/>
+    <rect width="1080" height="495" fill="url(#g)" opacity="0.7"/>
+    <rect x="0" y="0" width="1080" height="88" fill="#0a1525"/>
+    <text class="ti" x="40" y="40">Agent Memory 的四个问题</text>
+    <text class="sub" x="40" y="64">从"有没有长期记忆"拆成可设计的工程链路</text>
+    <line x1="0" y1="88" x2="1080" y2="88" stroke="#1e293b" stroke-width="1"/>
+
+
+    <path d="M450 175 L630 175" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M800 243 L800 300" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M630 367 L450 367" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <path d="M280 300 L280 243" stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#ar)"/>
+    <rect x="110" y="108" width="340" height="135" rx="10" fill="#0a1525"/>
+    <rect x="110" y="108" width="340" height="135" rx="10" fill="rgba(8,51,68,.55)" stroke="#22d3ee"
+            stroke-width="1.5"/>
+    <text class="h" x="280" y="134" text-anchor="middle">What：记什么</text>
+    <text class="sm" x="280" y="152" text-anchor="middle">Semantic 事实偏好</text>
+    <text class="sm" x="280" y="169" text-anchor="middle">Episodic 任务轨迹</text>
+    <text class="sm" x="280" y="186" text-anchor="middle">Procedural 行为规则</text>
+    <rect x="630" y="108" width="340" height="135" rx="10" fill="#0a1525"/>
+    <rect x="630" y="108" width="340" height="135" rx="10" fill="rgba(6,78,59,.55)" stroke="#34d399"
+            stroke-width="1.5"/>
+    <text class="h" x="800" y="134" text-anchor="middle">When：什么时候记</text>
+    <text class="sm" x="800" y="152" text-anchor="middle">Hot path：及时</text>
+    <text class="sm" x="800" y="169" text-anchor="middle">Background：提炼</text>
+    <text class="sm" x="800" y="186" text-anchor="middle">缓冲层：防误写</text>
+    <rect x="110" y="300" width="340" height="135" rx="10" fill="#0a1525"/>
+    <rect x="110" y="300" width="340" height="135" rx="10" fill="rgba(76,29,149,.55)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text class="h" x="280" y="326" text-anchor="middle">Where：存在哪里</text>
+    <text class="sm" x="280" y="344" text-anchor="middle">Prompt 常驻 / Profile</text>
+    <text class="sm" x="280" y="361" text-anchor="middle">检索库 / 会话日志</text>
+    <rect x="630" y="300" width="340" height="135" rx="10" fill="#0a1525"/>
+    <rect x="630" y="300" width="340" height="135" rx="10" fill="rgba(120,53,15,.55)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text class="h" x="800" y="326" text-anchor="middle">How：怎么维护</text>
+    <text class="sm" x="800" y="344" text-anchor="middle">召回</text>
+    <text class="sm" x="800" y="361" text-anchor="middle">更新 / 合并 / 压缩</text>
+    <text class="sm" x="800" y="378" text-anchor="middle">淘汰</text>
+    <rect x="435" y="200" width="210" height="80" rx="10" fill="#0a1525"/>
+    <rect x="435" y="200" width="210" height="80" rx="10" fill="rgba(30,41,59,.85)" stroke="#475569"
+            stroke-width="1.5"/>
+    <text class="h" x="540" y="250" text-anchor="middle">持续管线</text>
+    <text class="sm" x="540" y="270" text-anchor="middle">捕获→存储→召回→维护</text>
+</svg>

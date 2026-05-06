@@ -1,0 +1,41 @@
+{
+  "jobs": 4,
+  "tasks": [
+    {
+      "id": "benchmark-data",
+      "promptFiles": [
+        "prompts/01-infographic-benchmark-data.md"
+      ],
+      "image": "01-infographic-benchmark-data.png",
+      "ar": "16:9",
+      "quality": "2k"
+    },
+    {
+      "id": "context-locking",
+      "promptFiles": [
+        "prompts/02-framework-context-locking.md"
+      ],
+      "image": "02-framework-context-locking.png",
+      "ar": "16:9",
+      "quality": "2k"
+    },
+    {
+      "id": "scratchpad-workflow",
+      "promptFiles": [
+        "prompts/03-flowchart-scratchpad-workflow.md"
+      ],
+      "image": "03-flowchart-scratchpad-workflow.png",
+      "ar": "16:9",
+      "quality": "2k"
+    },
+    {
+      "id": "three-solutions",
+      "promptFiles": [
+        "prompts/04-comparison-three-solutions.md"
+      ],
+      "image": "04-comparison-three-solutions.png",
+      "ar": "16:9",
+      "quality": "2k"
+    }
+  ]
+}

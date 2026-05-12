@@ -1,0 +1,70 @@
+{
+  "tasks": [
+    {
+      "id": "illustration-01",
+      "promptFiles": [
+        "prompts/01-infographic-harness-gap.md"
+      ],
+      "image": "01-infographic-harness-gap.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    },
+    {
+      "id": "illustration-02",
+      "promptFiles": [
+        "prompts/02-framework-von-neumann.md"
+      ],
+      "image": "02-framework-von-neumann.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    },
+    {
+      "id": "illustration-03",
+      "promptFiles": [
+        "prompts/03-flowchart-react-loop.md"
+      ],
+      "image": "03-flowchart-react-loop.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    },
+    {
+      "id": "illustration-04",
+      "promptFiles": [
+        "prompts/04-infographic-context-management.md"
+      ],
+      "image": "04-infographic-context-management.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    },
+    {
+      "id": "illustration-05",
+      "promptFiles": [
+        "prompts/05-framework-ratchet.md"
+      ],
+      "image": "05-framework-ratchet.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    },
+    {
+      "id": "illustration-06",
+      "promptFiles": [
+        "prompts/06-comparison-architecture-decisions.md"
+      ],
+      "image": "06-comparison-architecture-decisions.png",
+      "provider": "seedream",
+      "ar": "16:9",
+      "quality": "2k",
+      "model": "ep-20260428000725-5thp8"
+    }
+  ]
+}

@@ -9,19 +9,6 @@
   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="17" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
-  <component name="SaveActionSettings">
-    <option name="actions">
-      <set>
-        <option value="activate" />
-        <option value="activateOnShortcut" />
-        <option value="activateOnBatch" />
-        <option value="organizeImports" />
-        <option value="reformat" />
-        <option value="rearrange" />
-      </set>
-    </option>
-    <option name="configurationPath" value="" />
-  </component>
   <component name="SuppressionsComponent">
     <option name="suppComments" value="[]" />
   </component>

@@ -1,0 +1,309 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 625">
+    <defs>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&amp;display=swap');
+            text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', monospace; }
+        </style>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <marker id="arr-cyan" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <polygon points="0 0, 9 3.5, 0 7" fill="#22d3ee"/>
+        </marker>
+        <marker id="arr-amber" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <polygon points="0 0, 9 3.5, 0 7" fill="#fbbf24"/>
+        </marker>
+        <marker id="arr-violet" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <polygon points="0 0, 9 3.5, 0 7" fill="#a78bfa"/>
+        </marker>
+        <marker id="arr-emerald" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+            <polygon points="0 0, 9 3.5, 0 7" fill="#34d399"/>
+        </marker>
+    </defs>
+
+    <rect width="900" height="625" fill="#0f172a"/>
+    <rect width="900" height="625" fill="url(#grid)"/>
+
+    <!-- Title -->
+    <text x="450" y="24" fill="white" font-size="15" font-weight="700" text-anchor="middle">五种 Workflow 模式</text>
+
+    <!-- Left divider -->
+    <line x1="170" y1="35" x2="170" y2="600" stroke="#1e293b" stroke-width="1"/>
+
+    <!-- ============================================================
+         ROW 1: Prompt Chaining  y=35~105  中心 y=70
+         ============================================================ -->
+    <line x1="10" y1="105" x2="890" y2="105" stroke="#1e293b" stroke-width="1"/>
+
+    <text x="85" y="61" fill="white" font-size="10" font-weight="700" text-anchor="middle">1. Prompt Chaining</text>
+    <text x="85" y="77" fill="#64748b" font-size="10" text-anchor="middle">顺序执行</text>
+
+    <!-- 输入 -->
+    <rect x="190" y="54" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="190" y="54" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="219" y="74" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输入</text>
+    <line x1="248" y1="70" x2="288" y2="70" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+    <!-- LLM1 -->
+    <rect x="288" y="54" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="288" y="54" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="329" y="74" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ①</text>
+    <line x1="370" y1="70" x2="410" y2="70" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+    <!-- LLM2 -->
+    <rect x="410" y="54" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="410" y="54" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="451" y="74" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ②</text>
+    <line x1="492" y1="70" x2="532" y2="70" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+    <!-- LLM3 -->
+    <rect x="532" y="54" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="532" y="54" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="573" y="74" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ③</text>
+    <line x1="614" y1="70" x2="654" y2="70" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+    <!-- 输出 -->
+    <rect x="654" y="54" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="654" y="54" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="683" y="74" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输出</text>
+    <!-- 注释 -->
+    <text x="730" y="67" fill="#94a3b8" font-size="10">每步输出</text>
+    <text x="730" y="80" fill="#94a3b8" font-size="10">= 下步输入</text>
+
+    <!-- ============================================================
+         ROW 2: Routing  y=105~235  高130
+         Router 中心 y=170
+         路径A 中心 y=140，路径B 中心 y=170，路径C 中心 y=200
+         各框高32，间距6px：A顶124，B顶154，C顶184
+         ============================================================ -->
+    <line x1="10" y1="235" x2="890" y2="235" stroke="#1e293b" stroke-width="1"/>
+
+    <text x="85" y="160" fill="white" font-size="10" font-weight="700" text-anchor="middle">2. Routing</text>
+    <text x="85" y="177" fill="#64748b" font-size="10" text-anchor="middle">分流处理</text>
+
+    <!-- 输入 中心y=170 -->
+    <rect x="190" y="154" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="190" y="154" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="219" y="174" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输入</text>
+    <line x1="248" y1="170" x2="288" y2="170" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+
+    <!-- Router -->
+    <rect x="288" y="152" width="90" height="36" rx="6" fill="#0f172a"/>
+    <rect x="288" y="152" width="90" height="36" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="333" y="167" fill="white" font-size="10" font-weight="700" text-anchor="middle">Router</text>
+    <text x="333" y="181" fill="#22d3ee" font-size="9" text-anchor="middle">LLM</text>
+
+    <!-- Router → 三分支，目标中心 140/170/200 -->
+    <line x1="378" y1="170" x2="420" y2="140" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+    <line x1="378" y1="170" x2="420" y2="170" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+    <line x1="378" y1="170" x2="420" y2="200" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+
+    <!-- 路径 A 顶=124 中心=140 -->
+    <rect x="420" y="124" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="420" y="124" width="82" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="461" y="144" fill="#34d399" font-size="11" font-weight="600" text-anchor="middle">路径 A</text>
+
+    <!-- 路径 B 顶=154 中心=170 -->
+    <rect x="420" y="154" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="420" y="154" width="82" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="461" y="174" fill="#34d399" font-size="11" font-weight="600" text-anchor="middle">路径 B</text>
+
+    <!-- 路径 C 顶=184 中心=200 -->
+    <rect x="420" y="184" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="420" y="184" width="82" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+    <text x="461" y="204" fill="#34d399" font-size="11" font-weight="600" text-anchor="middle">路径 C</text>
+
+    <!-- 注释 -->
+    <text x="525" y="158" fill="#94a3b8" font-size="10">按输入类型</text>
+    <text x="525" y="172" fill="#94a3b8" font-size="10">分发到专用路径</text>
+
+    <!-- ============================================================
+         ROW 3: Parallelization  y=235~365  高130
+         LLM① 中心=270，LLM② 中心=300，LLM③ 中心=330
+         间距30px，框高32px，不重叠
+         行中心=300
+         ============================================================ -->
+    <line x1="10" y1="365" x2="890" y2="365" stroke="#1e293b" stroke-width="1"/>
+
+    <text x="85" y="284" fill="white" font-size="10" font-weight="700" text-anchor="middle">3. Parallel-</text>
+    <text x="85" y="298" fill="white" font-size="10" font-weight="700" text-anchor="middle">ization</text>
+    <text x="85" y="316" fill="#64748b" font-size="10" text-anchor="middle">并行处理</text>
+
+    <!-- 输入 中心y=300 -->
+    <rect x="190" y="284" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="190" y="284" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="219" y="304" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输入</text>
+    <line x1="248" y1="300" x2="288" y2="300" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+    <!-- 分发节点 -->
+    <rect x="288" y="284" width="42" height="32" rx="6" fill="#0f172a"/>
+    <rect x="288" y="284" width="42" height="32" rx="6" fill="rgba(120,53,15,0.2)" stroke="#fbbf24" stroke-width="1"
+            stroke-dasharray="4,2"/>
+    <text x="309" y="304" fill="#fbbf24" font-size="10" text-anchor="middle">分发</text>
+
+    <!-- fan-out 竖线 x=330, y=268~332 -->
+    <line x1="330" y1="268" x2="330" y2="332" stroke="#fbbf24" stroke-width="1.2"/>
+    <line x1="330" y1="268" x2="380" y2="268" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+    <line x1="330" y1="300" x2="380" y2="300" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+    <line x1="330" y1="332" x2="380" y2="332" stroke="#fbbf24" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+
+    <!-- LLM① 顶=252 中心=268 -->
+    <rect x="380" y="252" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="380" y="252" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="421" y="272" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ①</text>
+
+    <!-- LLM② 顶=284 中心=300 -->
+    <rect x="380" y="284" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="380" y="284" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="421" y="304" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ②</text>
+
+    <!-- LLM③ 顶=316 中心=332 -->
+    <rect x="380" y="316" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="380" y="316" width="82" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="421" y="336" fill="#22d3ee" font-size="11" font-weight="600" text-anchor="middle">LLM ③</text>
+
+    <!-- fan-in 到中心y=300 -->
+    <line x1="462" y1="268" x2="505" y2="300" stroke="#22d3ee" stroke-width="1.2"/>
+    <line x1="462" y1="300" x2="505" y2="300" stroke="#22d3ee" stroke-width="1.2"/>
+    <line x1="462" y1="332" x2="505" y2="300" stroke="#22d3ee" stroke-width="1.2"/>
+    <line x1="505" y1="300" x2="548" y2="300" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+    <!-- 合并 -->
+    <rect x="548" y="284" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="548" y="284" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="577" y="304" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">合并</text>
+
+    <!-- 注释 -->
+    <text x="625" y="294" fill="#94a3b8" font-size="10">独立子任务</text>
+    <text x="625" y="308" fill="#94a3b8" font-size="10">同步执行</text>
+
+    <!-- ============================================================
+         ROW 4: Orchestrator-Workers  y=365~510  高145
+         Orchestrator 中心 y=435
+         Worker①②③ 中心: 400/435/470，间距35px，框高32px，不重叠
+         ============================================================ -->
+    <line x1="10" y1="510" x2="890" y2="510" stroke="#1e293b" stroke-width="1"/>
+
+    <text x="85" y="420" fill="white" font-size="10" font-weight="700" text-anchor="middle">4. Orchestrator</text>
+    <text x="85" y="434" fill="white" font-size="10" font-weight="700" text-anchor="middle">-Workers</text>
+    <text x="85" y="452" fill="#64748b" font-size="10" text-anchor="middle">动态分配</text>
+
+    <!-- 输入 中心y=435 -->
+    <rect x="190" y="419" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="190" y="419" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="219" y="439" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输入</text>
+    <line x1="248" y1="435" x2="290" y2="435" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+
+    <!-- Orchestrator 中心y=435 -->
+    <rect x="290" y="416" width="90" height="38" rx="6" fill="#0f172a"/>
+    <rect x="290" y="416" width="90" height="38" rx="6" fill="rgba(8,51,68,0.6)" stroke="#22d3ee" stroke-width="2"/>
+    <text x="335" y="431" fill="white" font-size="10" font-weight="700" text-anchor="middle">Orchestrator</text>
+    <text x="335" y="446" fill="#22d3ee" font-size="9" text-anchor="middle">LLM</text>
+
+    <!-- Orchestrator → Workers 目标中心: 400/435/470 -->
+    <line x1="380" y1="435" x2="415" y2="400" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+    <line x1="380" y1="435" x2="415" y2="435" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+    <line x1="380" y1="435" x2="415" y2="470" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-cyan)"/>
+
+    <!-- Worker① 顶=384 中心=400 -->
+    <rect x="415" y="384" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="415" y="384" width="82" height="32" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.2"/>
+    <text x="456" y="404" fill="#22d3ee" font-size="10" font-weight="600" text-anchor="middle">Worker ①</text>
+    <line x1="497" y1="400" x2="537" y2="400" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+
+    <!-- Worker② 顶=419 中心=435 -->
+    <rect x="415" y="419" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="415" y="419" width="82" height="32" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.2"/>
+    <text x="456" y="439" fill="#22d3ee" font-size="10" font-weight="600" text-anchor="middle">Worker ②</text>
+    <line x1="497" y1="435" x2="537" y2="435" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+
+    <!-- Worker③ 顶=454 中心=470 -->
+    <rect x="415" y="454" width="82" height="32" rx="6" fill="#0f172a"/>
+    <rect x="415" y="454" width="82" height="32" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.2"/>
+    <text x="456" y="474" fill="#22d3ee" font-size="10" font-weight="600" text-anchor="middle">Worker ③</text>
+    <line x1="497" y1="470" x2="537" y2="470" stroke="#22d3ee" stroke-width="1.2" marker-end="url(#arr-emerald)"/>
+
+    <!-- 工具① 顶=384 中心=400 -->
+    <rect x="537" y="384" width="65" height="32" rx="6" fill="#0f172a"/>
+    <rect x="537" y="384" width="65" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.2"/>
+    <text x="569" y="404" fill="#34d399" font-size="10" text-anchor="middle">工具 ①</text>
+    <line x1="602" y1="400" x2="640" y2="435" stroke="#34d399" stroke-width="1" stroke-dasharray="4,2"
+            marker-end="url(#arr-cyan)"/>
+
+    <!-- 工具② 顶=419 中心=435 -->
+    <rect x="537" y="419" width="65" height="32" rx="6" fill="#0f172a"/>
+    <rect x="537" y="419" width="65" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.2"/>
+    <text x="569" y="439" fill="#34d399" font-size="10" text-anchor="middle">工具 ②</text>
+    <line x1="602" y1="435" x2="640" y2="435" stroke="#34d399" stroke-width="1" stroke-dasharray="4,2"
+            marker-end="url(#arr-cyan)"/>
+
+    <!-- 工具③ 顶=454 中心=470 -->
+    <rect x="537" y="454" width="65" height="32" rx="6" fill="#0f172a"/>
+    <rect x="537" y="454" width="65" height="32" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.2"/>
+    <text x="569" y="474" fill="#34d399" font-size="10" text-anchor="middle">工具 ③</text>
+    <line x1="602" y1="470" x2="640" y2="435" stroke="#34d399" stroke-width="1" stroke-dasharray="4,2"
+            marker-end="url(#arr-cyan)"/>
+
+    <!-- 合并结果 中心y=435 -->
+    <rect x="640" y="416" width="88" height="38" rx="6" fill="#0f172a"/>
+    <rect x="640" y="416" width="88" height="38" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="684" y="431" fill="#22d3ee" font-size="10" font-weight="700" text-anchor="middle">合并结果</text>
+    <text x="684" y="445" fill="#94a3b8" font-size="8" text-anchor="middle">Orchestrator</text>
+    <line x1="728" y1="435" x2="768" y2="435" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+
+    <!-- 输出 -->
+    <rect x="768" y="419" width="52" height="32" rx="6" fill="#0f172a"/>
+    <rect x="768" y="419" width="52" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="794" y="439" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输出</text>
+
+    <!-- ============================================================
+         ROW 5: Evaluator-Optimizer  y=510~600  高90  中心y=555
+         ============================================================ -->
+
+    <text x="85" y="545" fill="white" font-size="10" font-weight="700" text-anchor="middle">5. Evaluator-</text>
+    <text x="85" y="559" fill="white" font-size="10" font-weight="700" text-anchor="middle">Optimizer</text>
+    <text x="85" y="577" fill="#64748b" font-size="10" text-anchor="middle">迭代改进</text>
+
+    <!-- 输入 中心y=555 -->
+    <rect x="190" y="539" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="190" y="539" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="219" y="559" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输入</text>
+    <line x1="248" y1="555" x2="288" y2="555" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arr-cyan)"/>
+
+    <!-- Generator 中心y=555 -->
+    <rect x="288" y="539" width="90" height="32" rx="6" fill="#0f172a"/>
+    <rect x="288" y="539" width="90" height="32" rx="6" fill="rgba(8,51,68,0.5)" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="333" y="554" fill="white" font-size="10" font-weight="700" text-anchor="middle">Generator</text>
+    <text x="333" y="566" fill="#22d3ee" font-size="8" text-anchor="middle">LLM</text>
+    <line x1="378" y1="555" x2="418" y2="555" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arr-violet)"/>
+
+    <!-- Evaluator 中心y=555 -->
+    <rect x="418" y="539" width="90" height="32" rx="6" fill="#0f172a"/>
+    <rect x="418" y="539" width="90" height="32" rx="6" fill="rgba(76,29,149,0.45)" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text x="463" y="554" fill="white" font-size="10" font-weight="700" text-anchor="middle">Evaluator</text>
+    <text x="463" y="566" fill="#a78bfa" font-size="8" text-anchor="middle">LLM</text>
+
+    <!-- 反馈弧 走 y=525 -->
+    <path d="M 463,539 L 463,523 L 333,523 L 333,539" fill="none" stroke="#a78bfa" stroke-width="1.2"
+            stroke-dasharray="5,3" marker-end="url(#arr-cyan)"/>
+    <text x="398" y="517" fill="#a78bfa" font-size="10" text-anchor="middle">改进建议</text>
+
+    <!-- 输出 -->
+    <line x1="508" y1="555" x2="548" y2="555" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arr-amber)"/>
+    <rect x="548" y="539" width="58" height="32" rx="6" fill="#0f172a"/>
+    <rect x="548" y="539" width="58" height="32" rx="6" fill="rgba(120,53,15,0.35)" stroke="#fbbf24"
+            stroke-width="1.5"/>
+    <text x="577" y="559" fill="#fbbf24" font-size="11" font-weight="600" text-anchor="middle">输出</text>
+
+    <!-- 注释 -->
+    <text x="630" y="548" fill="#94a3b8" font-size="10">生成→评估→改进</text>
+    <text x="630" y="562" fill="#94a3b8" font-size="10">循环直到通过</text>
+
+    <!-- Bottom note -->
+    <text x="450" y="616" fill="#475569" font-size="10" text-anchor="middle">
+        复杂度从上到下递增，大多数场景用前三种就够了
+    </text>
+</svg>

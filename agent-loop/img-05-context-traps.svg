@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 460" width="800" height="460">
+    <defs>
+        <!-- 网格背景 -->
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <!-- 上下文窗口渐变：两端亮中间暗 U形 -->
+        <linearGradient id="contextGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.9"/>
+            <stop offset="25%" stop-color="#06b6d4" stop-opacity="0.35"/>
+            <stop offset="50%" stop-color="#06b6d4" stop-opacity="0.08"/>
+            <stop offset="75%" stop-color="#06b6d4" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.9"/>
+        </linearGradient>
+        <!-- 安全区间填充 -->
+        <linearGradient id="safeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#10b981" stop-opacity="0.04"/>
+        </linearGradient>
+        <!-- 危险区间填充 -->
+        <linearGradient id="dangerGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#f43f5e" stop-opacity="0.04"/>
+        </linearGradient>
+        <!-- 字体 -->
+        <style>
+            text { font-family: 'JetBrains Mono', 'Noto Sans SC', monospace, sans-serif; }
+        </style>
+    </defs>
+
+    <!-- 背景 -->
+    <rect width="800" height="460" fill="#0f172a"/>
+    <rect width="800" height="460" fill="url(#grid)"/>
+
+    <!-- 分隔竖线 -->
+    <line x1="400" y1="30" x2="400" y2="430" stroke="#334155" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+    <!-- ===================== 左半：Lost in the Middle ===================== -->
+
+    <!-- 小标题 y=30 -->
+    <text x="205" y="30" text-anchor="middle" font-size="13" fill="#94a3b8" font-weight="600">陷阱一：Lost in the
+        Middle
+    </text>
+
+    <!-- 两端"高注意力"标注 y=52，在曲线上方 -->
+    <text x="55" y="52" text-anchor="middle" font-size="9" fill="#06b6d4">高注意力</text>
+    <text x="355" y="52" text-anchor="middle" font-size="9" fill="#06b6d4">高注意力</text>
+
+    <!-- 注意力曲线（U形）y=58-72，小标题和曲线之间留 28px -->
+    <path d="M 55 72 C 100 65, 150 58, 205 56 C 260 58, 310 65, 355 72"
+            fill="none" stroke="#06b6d4" stroke-width="2" opacity="0.8"/>
+    <!-- 两端高注意力圆点 -->
+    <circle cx="55" cy="72" r="4" fill="#06b6d4"/>
+    <circle cx="355" cy="72" r="4" fill="#06b6d4"/>
+    <!-- 中间低注意力圆点 -->
+    <circle cx="205" cy="56" r="4" fill="#f43f5e"/>
+
+    <!-- 上下文窗口条形图 y=82，曲线下方留 10px -->
+    <rect x="55" y="82" width="310" height="44" rx="4" fill="url(#contextGrad)" stroke="#06b6d4" stroke-width="1"
+            stroke-opacity="0.4"/>
+
+    <!-- 两条竖虚线分三段 -->
+    <line x1="158" y1="82" x2="158" y2="126" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,3"/>
+    <line x1="252" y1="82" x2="252" y2="126" stroke="#475569" stroke-width="1.2" stroke-dasharray="4,3"/>
+
+    <!-- 三段标签 -->
+    <text x="107" y="108" text-anchor="middle" font-size="11" fill="#f8fafc" font-weight="600">开头</text>
+    <text x="205" y="108" text-anchor="middle" font-size="11" fill="#475569">中间被忽略</text>
+    <text x="303" y="108" text-anchor="middle" font-size="11" fill="#f8fafc" font-weight="600">结尾</text>
+
+    <!-- 中间下箭头 + 标注，条形下方 y=136 -->
+    <line x1="205" y1="126" x2="205" y2="136" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrowRose)"/>
+    <text x="205" y="150" text-anchor="middle" font-size="10" fill="#f43f5e">检索性能下降 30%+</text>
+
+    <!-- 三个区域说明框 y=165，标注下方留 15px -->
+    <!-- 左框 cyan -->
+    <rect x="38" y="165" width="96" height="68" rx="6" fill="#06b6d4" fill-opacity="0.1" stroke="#06b6d4"
+            stroke-width="1.2"/>
+    <text x="86" y="181" text-anchor="middle" font-size="10" fill="#06b6d4" font-weight="700">系统指令</text>
+    <text x="86" y="196" text-anchor="middle" font-size="10" fill="#94a3b8">当前任务</text>
+    <text x="86" y="211" text-anchor="middle" font-size="10" fill="#10b981">放这里 ✓</text>
+    <text x="86" y="226" text-anchor="middle" font-size="9" fill="#475569">（首部）</text>
+
+    <!-- 中框 rose -->
+    <rect x="158" y="165" width="96" height="68" rx="6" fill="#f43f5e" fill-opacity="0.1" stroke="#f43f5e"
+            stroke-width="1.2"/>
+    <text x="206" y="181" text-anchor="middle" font-size="10" fill="#f43f5e" font-weight="700">历史工具输出</text>
+    <text x="206" y="196" text-anchor="middle" font-size="10" fill="#94a3b8">过时中间步骤</text>
+    <text x="206" y="211" text-anchor="middle" font-size="10" fill="#f43f5e">容易被忽略 ✗</text>
+    <text x="206" y="226" text-anchor="middle" font-size="9" fill="#475569">（中部）</text>
+
+    <!-- 右框 cyan -->
+    <rect x="278" y="165" width="96" height="68" rx="6" fill="#06b6d4" fill-opacity="0.1" stroke="#06b6d4"
+            stroke-width="1.2"/>
+    <text x="326" y="181" text-anchor="middle" font-size="10" fill="#06b6d4" font-weight="700">最近反馈</text>
+    <text x="326" y="196" text-anchor="middle" font-size="10" fill="#94a3b8">关键结论</text>
+    <text x="326" y="211" text-anchor="middle" font-size="10" fill="#10b981">放这里 ✓</text>
+    <text x="326" y="226" text-anchor="middle" font-size="9" fill="#475569">（尾部）</text>
+
+    <!-- 修复说明 y=248 -->
+    <rect x="38" y="248" width="336" height="26" rx="5" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="206" y="265" text-anchor="middle" font-size="11" fill="#94a3b8">修复：关键信息放首尾，中间留可压缩内容</text>
+
+    <!-- 底部标注 -->
+    <text x="205" y="292" text-anchor="middle" font-size="10.5" fill="#64748b">「位置决定注意力权重」</text>
+
+    <!-- ===================== 右半：40% 断崖 ===================== -->
+
+    <!-- 小标题 -->
+    <text x="595" y="55" text-anchor="middle" font-size="13" fill="#94a3b8" font-weight="600">陷阱二：40% 断崖</text>
+
+    <!-- 坐标系 -->
+    <!-- Y轴 -->
+    <line x1="440" y1="70" x2="440" y2="270" stroke="#475569" stroke-width="1.5"/>
+    <!-- X轴 -->
+    <line x1="440" y1="270" x2="770" y2="270" stroke="#475569" stroke-width="1.5"/>
+
+    <!-- Y轴标签 -->
+    <text x="435" y="75" text-anchor="end" font-size="10" fill="#64748b">100%</text>
+    <text x="435" y="145" text-anchor="end" font-size="10" fill="#64748b">50%</text>
+    <text x="435" y="272" text-anchor="end" font-size="10" fill="#64748b">0%</text>
+    <text x="418" y="175" text-anchor="middle" font-size="11" fill="#94a3b8" transform="rotate(-90, 418, 175)">性能
+    </text>
+
+    <!-- X轴标签 -->
+    <text x="440" y="285" text-anchor="middle" font-size="10" fill="#64748b">0</text>
+    <text x="566" y="285" text-anchor="middle" font-size="10" fill="#64748b">40%</text>
+    <text x="770" y="285" text-anchor="middle" font-size="10" fill="#64748b">100%</text>
+    <text x="605" y="298" text-anchor="middle" font-size="11" fill="#94a3b8">上下文填充率</text>
+
+    <!-- 坐标系刻度线 -->
+    <line x1="566" y1="268" x2="566" y2="272" stroke="#475569" stroke-width="1"/>
+    <line x1="770" y1="268" x2="770" y2="272" stroke="#475569" stroke-width="1"/>
+    <line x1="438" y1="145" x2="442" y2="145" stroke="#475569" stroke-width="1"/>
+
+    <!-- 安全区间背景填充（0-40%） -->
+    <polygon points="440,80 566,100 566,270 440,270" fill="url(#safeGrad)"/>
+    <!-- 危险区间背景填充（40-100%） -->
+    <polygon points="566,100 770,250 770,270 566,270" fill="url(#dangerGrad)"/>
+
+    <!-- 性能曲线 0-40% emerald 平缓 -->
+    <path d="M 440 80 C 480 82, 530 96, 566 100" fill="none" stroke="#10b981" stroke-width="2.5"/>
+    <!-- 性能曲线 40-100% rose 急剧下降 -->
+    <path d="M 566 100 C 620 120, 680 185, 770 250" fill="none" stroke="#f43f5e" stroke-width="2.5"/>
+
+    <!-- 40% 断崖竖虚线 amber -->
+    <line x1="566" y1="70" x2="566" y2="270" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="5,3"/>
+
+    <!-- 断崖点标注 -->
+    <rect x="572" y="72" width="78" height="22" rx="4" fill="#f59e0b" fill-opacity="0.15" stroke="#f59e0b"
+            stroke-width="1"/>
+    <text x="611" y="87" text-anchor="middle" font-size="11" fill="#f59e0b" font-weight="700">断崖点 ~40%</text>
+
+    <!-- 安全区标注 -->
+    <text x="503" y="92" text-anchor="middle" font-size="10" fill="#10b981">安全区间</text>
+    <!-- 危险区标注 -->
+    <text x="680" y="120" text-anchor="middle" font-size="10" fill="#f43f5e">危险区间</text>
+
+    <!-- 五种策略简表 -->
+    <rect x="430" y="308" width="340" height="90" rx="7" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+    <text x="600" y="325" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">应对策略</text>
+
+    <!-- 策略标签：第一行 4 个等宽 pill，第二行 1 个居中 -->
+    <rect x="444" y="332" width="72" height="20" rx="4" fill="#1e293b" stroke="#06b6d4" stroke-width="1"/>
+    <text x="480" y="346" text-anchor="middle" font-size="10" fill="#06b6d4">① 压缩</text>
+
+    <rect x="524" y="332" width="72" height="20" rx="4" fill="#1e293b" stroke="#06b6d4" stroke-width="1"/>
+    <text x="560" y="346" text-anchor="middle" font-size="10" fill="#06b6d4">② 观察遮蔽</text>
+
+    <rect x="604" y="332" width="72" height="20" rx="4" fill="#1e293b" stroke="#06b6d4" stroke-width="1"/>
+    <text x="640" y="346" text-anchor="middle" font-size="10" fill="#06b6d4">③ JIT 检索</text>
+
+    <rect x="684" y="332" width="72" height="20" rx="4" fill="#1e293b" stroke="#06b6d4" stroke-width="1"/>
+    <text x="720" y="346" text-anchor="middle" font-size="10" fill="#06b6d4">④ 输出卸载</text>
+
+    <rect x="564" y="358" width="90" height="20" rx="4" fill="#1e293b" stroke="#a78bfa" stroke-width="1"/>
+    <text x="609" y="372" text-anchor="middle" font-size="10" fill="#a78bfa">⑤ 注意力工程</text>
+
+    <!-- 底部全局注释 -->
+    <rect x="30" y="420" width="740" height="28" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="400" y="438" text-anchor="middle" font-size="11" fill="#64748b">
+        上下文不是越长越好：位置决定注意力，填充率超40%后性能断崖式下降
+    </text>
+</svg>

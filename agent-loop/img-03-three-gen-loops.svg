@@ -1,0 +1,227 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 870 500" width="870" height="500">
+    <defs>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&amp;family=Noto+Sans+SC:wght@400;500;600&amp;display=swap');
+            text { font-family: 'JetBrains Mono', 'Noto Sans SC', monospace, sans-serif; }
+        </style>
+        <!-- Grid pattern -->
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <!-- Arrow markers -->
+        <marker id="arrow-cyan" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#22d3ee"/>
+        </marker>
+        <marker id="arrow-emerald" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#34d399"/>
+        </marker>
+        <marker id="arrow-violet" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+        </marker>
+        <marker id="arrow-rose" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#fb7185"/>
+        </marker>
+        <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#fbbf24"/>
+        </marker>
+        <!-- Glow filters -->
+        <filter id="glow-cyan">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <filter id="glow-emerald">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+        <filter id="glow-violet">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge>
+                <feMergeNode in="coloredBlur"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- Background -->
+    <rect width="840" height="500" fill="#0f172a"/>
+    <rect width="840" height="500" fill="url(#grid)"/>
+
+    <!-- ===== COLUMN HEADERS ===== -->
+    <!-- Col 1: ReAct -->
+    <rect x="30" y="30" width="250" height="28" rx="4" fill="#22d3ee" fill-opacity="0.15" stroke="#22d3ee"
+            stroke-width="1"/>
+    <text x="155" y="49" text-anchor="middle" font-size="13" font-weight="600" fill="#22d3ee">第一代：ReAct（2023）</text>
+
+    <!-- Col 2: Reflexion -->
+    <rect x="295" y="30" width="250" height="28" rx="4" fill="#34d399" fill-opacity="0.15" stroke="#34d399"
+            stroke-width="1"/>
+    <text x="420" y="49" text-anchor="middle" font-size="13" font-weight="600" fill="#34d399">第二代：Reflexion（2023）
+    </text>
+
+    <!-- Col 3: LATS -->
+    <rect x="560" y="30" width="250" height="28" rx="4" fill="#a78bfa" fill-opacity="0.15" stroke="#a78bfa"
+            stroke-width="1"/>
+    <text x="685" y="49" text-anchor="middle" font-size="13" font-weight="600" fill="#a78bfa">第三代：LATS（2024）</text>
+
+    <!-- ============================= -->
+    <!-- COLUMN 1: ReAct (cx=145)      -->
+    <!-- ============================= -->
+
+    <!-- Thought box -->
+    <rect x="65" y="80" width="160" height="36" rx="5" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="145" y="102" text-anchor="middle" font-size="12" fill="#22d3ee">Thought</text>
+
+    <!-- Arrow Thought→Action -->
+    <line x1="145" y1="116" x2="145" y2="134" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+
+    <!-- Action box -->
+    <rect x="65" y="135" width="160" height="36" rx="5" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="145" y="157" text-anchor="middle" font-size="12" fill="#22d3ee">Action</text>
+
+    <!-- Arrow Action→Observation -->
+    <line x1="145" y1="171" x2="145" y2="189" stroke="#22d3ee" stroke-width="1.5" marker-end="url(#arrow-cyan)"/>
+
+    <!-- Observation box (dashed) -->
+    <rect x="65" y="190" width="160" height="36" rx="5" fill="#0f172a" stroke="#22d3ee" stroke-width="1.5"
+            stroke-dasharray="5,3"/>
+    <text x="145" y="212" text-anchor="middle" font-size="12" fill="#22d3ee">Observation</text>
+
+    <!-- Loop arc from Observation back to Thought -->
+    <path d="M 65 208 Q 30 208 30 150 Q 30 98 65 98" fill="none" stroke="#22d3ee" stroke-width="1.5"
+            stroke-dasharray="4,2" marker-end="url(#arrow-cyan)"/>
+    <text x="18" y="155" text-anchor="middle" font-size="9" fill="#22d3ee" transform="rotate(-90,18,155)">loop</text>
+
+    <!-- Annotation box right side col1 -->
+    <rect x="60" y="248" width="170" height="54" rx="4" fill="#0e2233" stroke="#22d3ee" stroke-width="1"
+            stroke-dasharray="3,2"/>
+    <text x="145" y="265" text-anchor="middle" font-size="10" fill="#94a3b8">代价低（1次调用/步）</text>
+    <text x="145" y="281" text-anchor="middle" font-size="10" fill="#94a3b8">HotpotQA 幻觉率</text>
+    <text x="145" y="296" text-anchor="middle" font-size="10" fill="#22d3ee">56% → ~0%</text>
+
+    <!-- ============================= -->
+    <!-- COLUMN 2: Reflexion (cx=420)  -->
+    <!-- ============================= -->
+
+    <!-- 执行 box -->
+    <rect x="340" y="80" width="160" height="36" rx="5" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
+    <text x="420" y="102" text-anchor="middle" font-size="12" fill="#34d399">执行</text>
+
+    <!-- Arrow 执行→失败 -->
+    <line x1="420" y1="116" x2="420" y2="134" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+
+    <!-- 失败 box -->
+    <rect x="340" y="135" width="160" height="36" rx="5" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"/>
+    <text x="420" y="157" text-anchor="middle" font-size="12" fill="#fb7185">失败</text>
+
+    <!-- Arrow 失败→反思 -->
+    <line x1="420" y1="171" x2="420" y2="189" stroke="#fb7185" stroke-width="1.5" marker-end="url(#arrow-rose)"/>
+
+    <!-- 反思 box (thick border) -->
+    <rect x="340" y="190" width="160" height="36" rx="5" fill="#0f172a" stroke="#34d399" stroke-width="2.5"/>
+    <text x="420" y="212" text-anchor="middle" font-size="12" font-weight="600" fill="#34d399">反思</text>
+
+    <!-- Arrow 反思→episodic memory -->
+    <line x1="420" y1="226" x2="420" y2="244" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+    <!-- episodic memory box -->
+    <rect x="355" y="245" width="130" height="26" rx="4" fill="#1e1b4b" stroke="#a78bfa" stroke-width="1"/>
+    <text x="420" y="262" text-anchor="middle" font-size="10" fill="#a78bfa">存入 episodic memory</text>
+
+    <!-- Loop arc from 反思 back to 执行 -->
+    <path d="M 340 208 Q 305 208 305 150 Q 305 98 340 98" fill="none" stroke="#34d399" stroke-width="1.5"
+            stroke-dasharray="4,2" marker-end="url(#arrow-emerald)"/>
+    <text x="292" y="155" text-anchor="middle" font-size="9" fill="#34d399" transform="rotate(-90,292,155)">retry</text>
+
+    <!-- Annotation box col2 -->
+    <rect x="335" y="285" width="170" height="54" rx="4" fill="#0e2233" stroke="#34d399" stroke-width="1"
+            stroke-dasharray="3,2"/>
+    <text x="420" y="302" text-anchor="middle" font-size="10" fill="#94a3b8">代价中（失败时额外调用）</text>
+    <text x="420" y="318" text-anchor="middle" font-size="10" fill="#94a3b8">HumanEval</text>
+    <text x="420" y="334" text-anchor="middle" font-size="10" fill="#34d399">67% → 91%</text>
+
+    <!-- ============================= -->
+    <!-- COLUMN 3: LATS (cx=685)       -->
+    <!-- ============================= -->
+
+    <!-- Root node -->
+    <circle cx="685" cy="100" r="16" fill="#0f172a" stroke="#a78bfa" stroke-width="2"/>
+    <text x="685" y="105" text-anchor="middle" font-size="10" fill="#a78bfa">root</text>
+
+    <!-- Lines root→children，指向三个节点中心 609/697/785 -->
+    <line x1="672" y1="113" x2="609" y2="148" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+    <line x1="685" y1="116" x2="697" y2="148" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+    <line x1="698" y1="113" x2="785" y2="148" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+
+    <!-- Child A (0.7)，x=573，中心 609 -->
+    <rect x="573" y="150" width="72" height="30" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="609" y="164" text-anchor="middle" font-size="10" fill="#a78bfa">A</text>
+    <text x="609" y="175" text-anchor="middle" font-size="9" fill="#94a3b8">0.7</text>
+
+    <!-- Child B (0.4, pruned)，x=661，中心 697 -->
+    <rect x="661" y="150" width="72" height="30" rx="4" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"
+            stroke-dasharray="4,2"/>
+    <text x="697" y="164" text-anchor="middle" font-size="10" fill="#fb7185">B</text>
+    <text x="697" y="175" text-anchor="middle" font-size="9" fill="#fb7185">0.4 ✗</text>
+
+    <!-- Child C (0.6)，x=749，中心 785 -->
+    <rect x="749" y="150" width="72" height="30" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="785" y="164" text-anchor="middle" font-size="10" fill="#a78bfa">C</text>
+    <text x="785" y="175" text-anchor="middle" font-size="9" fill="#94a3b8">0.6</text>
+
+    <!-- Lines A→A1, A→A2，从 A 的中心 609 出发 -->
+    <line x1="597" y1="180" x2="585" y2="210" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+    <line x1="621" y1="180" x2="633" y2="210" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arrow-violet)"/>
+
+    <!-- A1 (0.9 best) -->
+    <rect x="555" y="212" width="62" height="30" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="2"/>
+    <text x="586" y="226" text-anchor="middle" font-size="10" fill="#a78bfa">A1</text>
+    <text x="586" y="237" text-anchor="middle" font-size="9" fill="#fbbf24">0.9 ★</text>
+
+    <!-- A2 (0.3) -->
+    <rect x="623" y="212" width="62" height="30" rx="4" fill="#0f172a" stroke="#a78bfa" stroke-width="1"
+            stroke-opacity="0.6"/>
+    <text x="654" y="226" text-anchor="middle" font-size="10" fill="#a78bfa" fill-opacity="0.7">A2</text>
+    <text x="654" y="237" text-anchor="middle" font-size="9" fill="#94a3b8">0.3</text>
+
+    <!-- Annotation box col3 -->
+    <rect x="575" y="260" width="215" height="68" rx="4" fill="#0e2233" stroke="#a78bfa" stroke-width="1"
+            stroke-dasharray="3,2"/>
+    <text x="682" y="278" text-anchor="middle" font-size="10" fill="#94a3b8">LLM 三角色：生成/评估/反思</text>
+    <text x="682" y="294" text-anchor="middle" font-size="10" fill="#94a3b8">代价高（5–10×）</text>
+    <text x="682" y="310" text-anchor="middle" font-size="10" fill="#a78bfa">HumanEval 92.7%</text>
+
+    <!-- ============================= -->
+    <!-- BOTTOM BAR CHART              -->
+    <!-- ============================= -->
+    <text x="420" y="362" text-anchor="middle" font-size="11" fill="#64748b">计算代价对比（相对单位）</text>
+
+    <!-- Bar labels -->
+    <text x="38" y="384" font-size="10" fill="#22d3ee">ReAct</text>
+    <text x="38" y="408" font-size="10" fill="#34d399">Reflexion</text>
+    <text x="38" y="432" font-size="10" fill="#a78bfa">LATS</text>
+
+    <!-- Bar background tracks -->
+    <rect x="100" y="372" width="680" height="16" rx="3" fill="#1e293b"/>
+    <rect x="100" y="396" width="680" height="16" rx="3" fill="#1e293b"/>
+    <rect x="100" y="420" width="680" height="16" rx="3" fill="#1e293b"/>
+
+    <!-- Bars (ratio 1:2:8 → max=680, 1→76, 2→152, 8→607) -->
+    <rect x="100" y="372" width="76" height="16" rx="3" fill="#22d3ee" fill-opacity="0.8"/>
+    <rect x="100" y="396" width="152" height="16" rx="3" fill="#34d399" fill-opacity="0.8"/>
+    <rect x="100" y="420" width="607" height="16" rx="3" fill="#a78bfa" fill-opacity="0.8"/>
+
+    <!-- Bar value labels -->
+    <text x="185" y="384" font-size="10" fill="#0f172a" font-weight="600">1×</text>
+    <text x="261" y="408" font-size="10" fill="#0f172a" font-weight="600">2×</text>
+    <text x="715" y="432" font-size="10" fill="#0f172a" font-weight="600">~8×</text>
+
+    <!-- Bottom caption -->
+    <text x="420" y="470" text-anchor="middle" font-size="10" fill="#475569">每步平均 LLM 调用次数（以 ReAct 为基准）
+    </text>
+</svg>

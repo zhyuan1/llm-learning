@@ -428,6 +428,9 @@ Human-in-the-Loop 不是"Agent 不行了找人帮忙"。它是架构设计的一
 
 **任务**：修复一个 GitHub Issue——"用户注册时邮箱验证不生效"
 
+代码库的初始状态：`auth/register.py` 处理注册逻辑，`auth/validators.py` 里已有 `validate_email` 函数，但 `register.py`
+从未调用它。
+
 ---
 
 **第一轮循环：**

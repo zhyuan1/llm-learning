@@ -57,7 +57,7 @@
       "Bash(npx agent-fetch *)",
       "Bash(curl *)",
       "WebFetch(domain:x.com)",
-      "Bash(grep -v \"^--$\")"
+      "Bash(grep -v \"^--$\")",
       "Bash(bun *)",
       "Read(//Users/zhouhaiyuan/.claude-internal/skills/read/**)",
       "Read(//Users/zhouhaiyuan/.claude-internal/skills/write/**)",

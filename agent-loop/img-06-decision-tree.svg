@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 580" width="760" height="580">
+    <defs>
+        <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <style>
+            text { font-family: 'JetBrains Mono', 'Noto Sans SC', monospace, sans-serif; }
+        </style>
+        <!-- 箭头 marker -->
+        <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#475569"/>
+        </marker>
+        <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#06b6d4"/>
+        </marker>
+        <marker id="arrowEmerald" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+        </marker>
+        <marker id="arrowRose" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f43f5e"/>
+        </marker>
+        <marker id="arrowViolet" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#a78bfa"/>
+        </marker>
+        <marker id="arrowAmber" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#f59e0b"/>
+        </marker>
+    </defs>
+
+    <!-- 背景 -->
+    <rect width="760" height="580" fill="#0f172a"/>
+    <rect width="760" height="580" fill="url(#grid)"/>
+
+    <!-- 标题 -->
+    <text x="380" y="32" text-anchor="middle" font-size="16" fill="#f1f5f9" font-weight="700">架构选择决策树</text>
+    <text x="380" y="50" text-anchor="middle" font-size="11" fill="#64748b">
+        从最简单的方案开始，只在复杂度确实需要时才升级
+    </text>
+
+    <!-- ======= 根节点：amber菱形 x=360, y=82 ======= -->
+    <!-- 菱形 -->
+    <polygon points="360,64 420,88 360,112 300,88" fill="#f59e0b" fill-opacity="0.15" stroke="#f59e0b"
+            stroke-width="2"/>
+    <text x="360" y="84" text-anchor="middle" font-size="10.5" fill="#f59e0b" font-weight="600">任务步骤</text>
+    <text x="360" y="98" text-anchor="middle" font-size="10.5" fill="#f59e0b" font-weight="600">是否固定？</text>
+
+    <!-- ======= 是（左）→ Workflow ======= -->
+    <!-- 箭头：根节点左 → Workflow框 -->
+    <line x1="300" y1="88" x2="195" y2="88" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <text x="250" y="82" text-anchor="middle" font-size="10" fill="#06b6d4">是</text>
+
+    <!-- Workflow 大框 (x=100, y=106, w=170, h=42) -->
+    <rect x="100" y="104" width="170" height="42" rx="10" fill="#06b6d4" fill-opacity="0.12" stroke="#06b6d4"
+            stroke-width="2"/>
+    <text x="185" y="120" text-anchor="middle" font-size="12" fill="#06b6d4" font-weight="700">Workflow</text>
+    <text x="185" y="137" text-anchor="middle" font-size="10" fill="#94a3b8">编排型，确定性</text>
+
+    <!-- Workflow → 子菱形"步骤独立？" -->
+    <line x1="185" y1="146" x2="185" y2="170" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- 子菱形"步骤独立？"(x=185, y=182) -->
+    <polygon points="185,166 235,186 185,206 135,186" fill="#1e293b" fill-opacity="0.8" stroke="#475569"
+            stroke-width="1.5"/>
+    <text x="185" y="183" text-anchor="middle" font-size="10" fill="#cbd5e1">步骤</text>
+    <text x="185" y="196" text-anchor="middle" font-size="10" fill="#cbd5e1">独立？</text>
+
+    <!-- 是→左：Parallelization -->
+    <line x1="135" y1="186" x2="72" y2="186" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrowEmerald)"/>
+    <text x="104" y="180" text-anchor="middle" font-size="10" fill="#10b981">是</text>
+
+    <rect x="30" y="174" width="106" height="48" rx="7" fill="#10b981" fill-opacity="0.1" stroke="#10b981"
+            stroke-width="1.5"/>
+    <text x="83" y="193" text-anchor="middle" font-size="11" fill="#10b981" font-weight="700">Parallelization</text>
+    <text x="83" y="207" text-anchor="middle" font-size="9" fill="#64748b">并行处理独立子任务</text>
+
+    <!-- 否→向下：子菱形"步骤有序？" -->
+    <line x1="185" y1="206" x2="185" y2="232" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="192" y="222" font-size="10" fill="#94a3b8">否</text>
+
+    <!-- 子菱形"步骤有序？"(x=185, y=246) -->
+    <polygon points="185,230 240,252 185,274 130,252" fill="#1e293b" fill-opacity="0.8" stroke="#475569"
+            stroke-width="1.5"/>
+    <text x="185" y="249" text-anchor="middle" font-size="10" fill="#cbd5e1">步骤</text>
+    <text x="185" y="262" text-anchor="middle" font-size="10" fill="#cbd5e1">有序？</text>
+
+    <!-- 是→左：Prompt Chaining -->
+    <line x1="130" y1="252" x2="72" y2="252" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrowEmerald)"/>
+    <text x="101" y="246" text-anchor="middle" font-size="10" fill="#10b981">是</text>
+
+    <rect x="30" y="238" width="106" height="48" rx="7" fill="#10b981" fill-opacity="0.1" stroke="#10b981"
+            stroke-width="1.5"/>
+    <text x="83" y="257" text-anchor="middle" font-size="11" fill="#10b981" font-weight="700">Prompt Chaining</text>
+    <text x="83" y="271" text-anchor="middle" font-size="9" fill="#64748b">顺序执行，输出串输入</text>
+
+    <!-- 否→向下：Routing -->
+    <line x1="185" y1="274" x2="185" y2="302" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrowEmerald)"/>
+    <text x="192" y="290" font-size="10" fill="#94a3b8">否</text>
+
+    <rect x="130" y="302" width="110" height="48" rx="7" fill="#10b981" fill-opacity="0.1" stroke="#10b981"
+            stroke-width="1.5"/>
+    <text x="185" y="321" text-anchor="middle" font-size="11" fill="#10b981" font-weight="700">Routing</text>
+    <text x="185" y="337" text-anchor="middle" font-size="9" fill="#64748b">按输入类型分流</text>
+
+    <!-- ======= 否（右）→ Agent ======= -->
+    <!-- 箭头：根节点右 → 子菱形"步骤数可预测？" -->
+    <line x1="420" y1="88" x2="530" y2="88" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrowRose)"/>
+    <text x="473" y="82" text-anchor="middle" font-size="10" fill="#f43f5e">否</text>
+
+    <!-- 子菱形"步骤数可预测？"(x=560, y=88) violet -->
+    <polygon points="560,66 622,88 560,110 498,88" fill="#1e293b" fill-opacity="0.8" stroke="#a78bfa"
+            stroke-width="1.8"/>
+    <text x="560" y="84" text-anchor="middle" font-size="9.5" fill="#a78bfa">步骤数</text>
+    <text x="560" y="97" text-anchor="middle" font-size="9.5" fill="#a78bfa">可预测？</text>
+
+    <!-- 是→向下：Orchestrator-Workers -->
+    <line x1="560" y1="110" x2="560" y2="136" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrowEmerald)"/>
+    <text x="567" y="126" font-size="10" fill="#10b981">是</text>
+
+    <rect x="492" y="136" width="136" height="50" rx="7" fill="#10b981" fill-opacity="0.1" stroke="#10b981"
+            stroke-width="1.5"/>
+    <text x="560" y="155" text-anchor="middle" font-size="10.5" fill="#10b981" font-weight="700">Orchestrator-Workers
+    </text>
+    <text x="560" y="170" text-anchor="middle" font-size="9" fill="#64748b">中心LLM动态拆分子任务</text>
+
+    <!-- 否→右：Agent框 -->
+    <line x1="622" y1="88" x2="670" y2="88" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrowRose)"/>
+    <line x1="670" y1="88" x2="670" y2="140" stroke="#f43f5e" stroke-width="1.5"/>
+    <text x="648" y="82" text-anchor="middle" font-size="10" fill="#f43f5e">否</text>
+
+    <!-- Agent框 (x=618, y=140, w=104, h=42) rose粗边框 -->
+    <rect x="618" y="140" width="104" height="42" rx="8" fill="#f43f5e" fill-opacity="0.12" stroke="#f43f5e"
+            stroke-width="2.5"/>
+    <text x="670" y="157" text-anchor="middle" font-size="12" fill="#f43f5e" font-weight="700">Agent</text>
+    <text x="670" y="172" text-anchor="middle" font-size="10" fill="#94a3b8">自主循环，动态决策</text>
+
+    <!-- Agent → 菱形"需要从失败学习？" -->
+    <line x1="670" y1="182" x2="670" y2="210" stroke="#f43f5e" stroke-width="1.5" marker-end="url(#arrowRose)"/>
+
+    <!-- 菱形"需要从失败学习？"(x=670, y=224) rose -->
+    <polygon points="670,208 730,228 670,248 610,228" fill="#1e293b" fill-opacity="0.8" stroke="#f43f5e"
+            stroke-width="1.5"/>
+    <text x="670" y="223" text-anchor="middle" font-size="9.5" fill="#f43f5e">需要从</text>
+    <text x="670" y="236" text-anchor="middle" font-size="9.5" fill="#f43f5e">失败学习？</text>
+
+    <!-- 否→向下：ReAct -->
+    <line x1="670" y1="248" x2="670" y2="276" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#arrowCyan)"/>
+    <text x="677" y="266" font-size="10" fill="#94a3b8">否</text>
+
+    <rect x="600" y="276" width="130" height="50" rx="7" fill="#06b6d4" fill-opacity="0.1" stroke="#06b6d4"
+            stroke-width="1.5"/>
+    <text x="665" y="296" text-anchor="middle" font-size="12" fill="#06b6d4" font-weight="700">ReAct</text>
+    <text x="665" y="312" text-anchor="middle" font-size="9" fill="#64748b">Thought→Act→Observe</text>
+
+    <!-- 是→左：子菱形"高价值复杂决策？" -->
+    <line x1="610" y1="228" x2="540" y2="228" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowViolet)"/>
+    <text x="575" y="222" text-anchor="middle" font-size="10" fill="#a78bfa">是</text>
+
+    <!-- 子菱形"高价值复杂决策？"(x=490, y=228) violet -->
+    <polygon points="490,208 550,228 490,248 430,228" fill="#1e293b" fill-opacity="0.8" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text x="490" y="223" text-anchor="middle" font-size="9" fill="#a78bfa">高价值</text>
+    <text x="490" y="236" text-anchor="middle" font-size="9" fill="#a78bfa">复杂决策？</text>
+
+    <!-- 否→向下：ReAct + Reflexion -->
+    <line x1="490" y1="248" x2="490" y2="276" stroke="#10b981" stroke-width="1.5" marker-end="url(#arrowEmerald)"/>
+    <text x="497" y="266" font-size="10" fill="#94a3b8">否</text>
+
+    <rect x="418" y="276" width="144" height="50" rx="7" fill="#10b981" fill-opacity="0.1" stroke="#10b981"
+            stroke-width="1.5"/>
+    <text x="490" y="295" text-anchor="middle" font-size="10.5" fill="#10b981" font-weight="700">ReAct + Reflexion
+    </text>
+    <text x="490" y="311" text-anchor="middle" font-size="9" fill="#64748b">失败后反思重试</text>
+
+    <!-- 是→左：ReAct + Reflexion + LATS -->
+    <line x1="430" y1="228" x2="340" y2="228" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrowViolet)"/>
+    <text x="385" y="222" text-anchor="middle" font-size="10" fill="#a78bfa">是</text>
+    <line x1="340" y1="228" x2="340" y2="276" stroke="#a78bfa" stroke-width="1.5"/>
+
+    <rect x="278" y="276" width="124" height="56" rx="7" fill="#a78bfa" fill-opacity="0.12" stroke="#a78bfa"
+            stroke-width="2.2"/>
+    <text x="340" y="294" text-anchor="middle" font-size="9.5" fill="#a78bfa" font-weight="700">ReAct + Reflexion</text>
+    <text x="340" y="308" text-anchor="middle" font-size="9.5" fill="#a78bfa" font-weight="700">+ LATS</text>
+    <text x="340" y="323" text-anchor="middle" font-size="9" fill="#64748b">多路搜索，回溯决策</text>
+
+    <!-- ======= 底部成本参考图例 ======= -->
+    <rect x="30" y="370" width="700" height="68" rx="8" fill="#0f172a" stroke="#334155" stroke-width="1.2"/>
+    <text x="380" y="388" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">复杂度 / 成本参考</text>
+
+    <!-- 5个色块 -->
+    <rect x="46" y="398" width="96" height="22" rx="5" fill="#10b981" fill-opacity="0.15" stroke="#10b981"
+            stroke-width="1.2"/>
+    <text x="94" y="413" text-anchor="middle" font-size="10" fill="#10b981">Prompt Chaining</text>
+
+    <rect x="150" y="398" width="96" height="22" rx="5" fill="#10b981" fill-opacity="0.15" stroke="#10b981"
+            stroke-width="1.2"/>
+    <text x="198" y="413" text-anchor="middle" font-size="10" fill="#10b981">Parallelization</text>
+
+    <rect x="254" y="398" width="72" height="22" rx="5" fill="#06b6d4" fill-opacity="0.15" stroke="#06b6d4"
+            stroke-width="1.2"/>
+    <text x="290" y="413" text-anchor="middle" font-size="10" fill="#06b6d4">Routing</text>
+
+    <rect x="334" y="398" width="144" height="22" rx="5" fill="#06b6d4" fill-opacity="0.15" stroke="#06b6d4"
+            stroke-width="1.2"/>
+    <text x="406" y="413" text-anchor="middle" font-size="10" fill="#06b6d4">Orchestrator-Workers</text>
+
+    <rect x="486" y="398" width="64" height="22" rx="5" fill="#f43f5e" fill-opacity="0.15" stroke="#f43f5e"
+            stroke-width="1.2"/>
+    <text x="518" y="413" text-anchor="middle" font-size="10" fill="#f43f5e">Agent</text>
+
+    <rect x="558" y="398" width="120" height="22" rx="5" fill="#a78bfa" fill-opacity="0.15" stroke="#a78bfa"
+            stroke-width="1.5"/>
+    <text x="618" y="413" text-anchor="middle" font-size="10" fill="#a78bfa">LATS</text>
+
+    <!-- 成本箭头 -->
+    <line x1="46" y1="430" x2="718" y2="430" stroke="#334155" stroke-width="1.2" marker-end="url(#arrow)"/>
+    <text x="382" y="442" text-anchor="middle" font-size="10" fill="#475569">成本 / 延迟 / 复杂度递增 →</text>
+
+    <!-- 底部全局注释 -->
+    <rect x="30" y="455" width="700" height="26" rx="6" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+    <text x="380" y="472" text-anchor="middle" font-size="11" fill="#64748b">优先选择简单确定性方案；只有任务真正需要自主性时，才引入
+        Agent
+    </text>
+</svg>

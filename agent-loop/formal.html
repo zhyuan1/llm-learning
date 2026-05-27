@@ -1,0 +1,1574 @@
+<!doctype html>
+<html style="      ">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent 架构全景：感知层、决策层、行动层、反馈层的原理拆解与工程实现</title>
+  <meta name="description"
+        content="2024 年，Princeton 团队做了一个实验：把 GPT-4 接入 SWE-bench（一个真实的 GitHub Issue 修复基准），模型没换，训练数据没动，只改了一件事——接入模型的那套接口重新设计了一遍。">
+
+
+</head>
+<body
+    style="padding: 24px; background: #ffffff; max-width: 860px; margin: 0 auto; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left;">
+<div id="output">
+  <section class="container"
+           style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left;">
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0; margin-top: 0 !important;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      Agent 不是 ChatBot + 工具</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">2024 年，Princeton 团队做了一个实验：把
+      GPT-4 接入 SWE-bench（一个真实的 GitHub Issue
+      修复基准），模型没换，训练数据没动，只改了一件事——接入模型的那套接口重新设计了一遍。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">通过率从 3.8% 跳到了 12.5%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">同年，Anthropic 把 Claude 3.5 Sonnet
+      接入一套精简框架，两个工具（Bash + Edit）加一条约束（强制绝对路径）。SWE-bench Verified 得分：49%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">同一个模型，从 3.8% 到
+      49%。差距不在模型，在结构。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Agent 不是&quot;聊天机器人加了几个工具&quot;。它是一个控制系统。核心问题不是怎么生成更好的回答，而是怎么在开放环境中持续完成目标。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">控制系统有一个经典结构：传感器采集信息
+      → 控制器做出决策 → 执行器改变环境 →
+      反馈回路检验效果。这个结构在工业控制、机器人、自动驾驶中反复出现，因为它是任何需要在不确定环境中持续运行的系统的最小完备架构。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">LLM Agent 也收敛到了同样的结构：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="感知 → 决策 → 行动 → 反馈 → 感知 → ..."
+                     data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">感知&nbsp;→&nbsp;决策&nbsp;→&nbsp;行动&nbsp;→&nbsp;反馈&nbsp;→&nbsp;感知&nbsp;→&nbsp;...</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img src="img-01-four-layer-loop.svg"
+                                                                                        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-01-four-layer-loop.svg"
+                                                                                        style="display: block; width: 100%; margin: 1.5em auto;">
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      这篇文章拆解这四层：每一层在做什么，为什么这么设计，工程上怎么落地。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      1. 全局框架：CoALA 与四层闭环</h2>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      1.1 CoALA：给 Agent 一个形式化的骨架</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">2023 年，CoALA（Cognitive Architectures
+      for Language Agents）试图回答一个问题：所有 LLM Agent 的共同结构是什么？</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">答案是三个组件：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">记忆</strong>，分为工作记忆（当前上下文窗口里的内容）和长期记忆（外部存储）。长期记忆又分三种：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 程序性记忆：怎么做事（技能、流程）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 语义记忆：知道什么（事实、知识库）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        情节性记忆：经历过什么（过去的成功和失败）
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">动作空间</strong>，Agent
+      能做的所有事情，分为内部动作（推理、检索、写入记忆）和外部动作（调用工具、与环境交互）。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">决策过程</strong>，从动作空间中选择下一步的机制。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">三者组合起来构成一个完整的认知架构。任何
+      Agent 系统，不管它用什么框架、什么模型，都可以用这套词汇来描述和分析。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      1.2 四层映射</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">CoALA
+      的形式化与控制论的四层闭环之间存在清晰的对应：</p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          层
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          CoALA 对应
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          核心问题
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          工程关注点
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">感知
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">工作记忆的输入
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">模型能看见什么
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            观察格式、记忆检索、上下文管理
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">决策
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">决策过程
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">下一步做什么
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            推理链、规划策略、搜索算法
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">行动
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">外部动作空间
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">对环境做什么
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            工具定义、执行沙箱、权限控制
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">观察 →
+            记忆更新
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">做对了没
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            结果验证、反思机制、错误恢复
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      四层各有独立的工程问题，也有跨层的耦合关系，后面逐层展开，最后再讲耦合。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img src="img-02-coala-mapping.svg"
+                                                                                        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-02-coala-mapping.svg"
+                                                                                        style="display: block; width: 100%; margin: 1.5em auto;">
+    </p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      1.3 Workflow vs Agent：什么时候用哪个</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Anthropic
+      在工程指南中做了一个关键区分：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Workflow</strong>（编排型），LLM
+      和工具通过预定义的代码路径编排，步骤确定，开发者写死了流程，适合定义清晰的任务。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Agent</strong>（自主型），LLM
+      动态决定自己的执行路径和工具使用，步骤不可预测，模型自己选择下一步，适合开放式问题。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">选择原则：从最简单的方案开始。Workflow
+      提供可预测性和一致性；Agent 提供灵活性，但代价是更高的成本、更难调试、错误会复利累积。只在复杂度确实需要时才升级到
+      Agent。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">五种 Workflow 模式（复杂度递增）：</p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Prompt Chaining</strong>：顺序执行，每步的输出是下一步的输入
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Routing</strong>：根据输入类型分发到不同处理路径
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Parallelization</strong>：拆成独立子任务并行处理
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">4. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Orchestrator-Workers</strong>：中心 LLM
+        动态拆任务、分配、合并
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">5. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Evaluator-Optimizer</strong>：一个生成，一个评估，迭代改进
+      </li>
+    </ol>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img
+        src="img-07-workflow-patterns.svg"
+        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-07-workflow-patterns.svg"
+        style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">大多数生产系统用 Workflow
+      就够了，能解决的问题就不要上 Agent。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      2. 感知层：模型能看见什么</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">核心矛盾：上下文窗口有限，而环境信息无限。</strong>
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">模型不能直接&quot;看见&quot;环境，它看见的是喂给它的文本。感知层的设计决定了模型能理解什么、会忽略什么、在哪里犯错。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      2.1 观察格式设计：Agent-Computer Interface</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">SWE-agent
+      的实验揭示了一个反直觉的事实：同一个模型，仅仅改变它与环境交互的接口格式，性能就能翻倍。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">这个发现催生了一个概念：<strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">ACI（Agent-Computer Interface）</strong>。就像 HCI
+      为人类设计界面，ACI 为 LLM 设计界面。两者的需求完全不同：人类需要视觉、空间、交互；LLM 需要文本、顺序，且受限于上下文窗口。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">三条设计原则：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">最小认知开销</strong>，用模型在训练数据中自然见过的格式。Markdown
+      表格比自定义 XML 好，带行号的代码比纯代码好，结构化错误信息比 raw stack trace 好。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">先给上下文，再要求精确输出</strong>，不要上来就问&quot;第
+      47 行应该改成什么&quot;——先展示第 40-55 行的代码，再问。模型需要足够的 token 看清楚才能给出精确答案。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">防错设计</strong>，强制绝对路径，消灭相对路径错误；用枚举参数替代自由文本；在工具定义里写清楚&quot;不要做
+      X&quot;。Anthropic 在 SWE-bench 开发中发现：花在工具接口设计上的时间，比花在 prompt 上的时间更有价值。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">一个具体的例子是文件浏览：给模型看整个
+      2000 行文件，它会迷失在中间；给它一个分页查看器，每次 100 行，带行号，带当前位置标记，它能准确定位问题。这就是 ACI
+      设计的差距。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      2.2 记忆架构：三层模型</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Lilian Weng 在综述中提出了 Agent
+      记忆的三层模型，对应人类认知科学中的记忆分类：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">感知记忆</strong>（Sensory Memory），原始输入的第一层处理。对
+      Agent 来说，就是 API 返回的 raw JSON、终端输出的原始文本、截图的像素数据。持续时间极短，很快要么进入短期记忆，要么被丢弃。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">短期记忆</strong>（Short-term / Working
+      Memory），也就是上下文窗口，快但有限。128K token 看起来很多，但对一个需要跨越几十个文件、几百次工具调用的长任务来说，很快就不够了。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">长期记忆</strong>（Long-term
+      Memory），外部存储，包括向量数据库、文件系统、结构化数据库。容量无限但检索有延迟，且检索质量不稳定。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      工程实现上，每层对应不同的技术方案：</p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          层
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          实现
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          特点
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">感知记忆
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">工具输出格式化
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">ACI 设计管这里
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">短期记忆
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">上下文窗口管理
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">压缩、裁剪、摘要
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">长期记忆
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">RAG / 文件系统
+            / KV Store
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">需要检索策略
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Agent Patterns Atlas
+      提供了几个记忆相关的工程模式：</p></li>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Filesystem as Context</strong>：把工作状态写入文件，每次读取最新版本。文件系统本身就是一种外部记忆。Voyager
+        的技能库就是这个模式——成功的代码写入文件，按描述索引，下次检索复用。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Variables Manager</strong>：显式追踪关键状态变量（当前目标、已完成步骤、待验证假设），而不是让模型从整个对话历史中隐式推断。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">RAG</strong>：语义检索，适合知识库查询，但对状态追踪不太适用。
+      </li>
+    </ul>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      2.3 上下文管理：对抗信息腐化</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      上下文窗口有一个不直觉的性质：不是越长越好。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img src="img-05-context-traps.svg"
+                                                                                        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-05-context-traps.svg"
+                                                                                        style="display: block; width: 100%; margin: 1.5em auto;">
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Stanford 的&quot;Lost in the Middle&quot;研究发现，当关键信息落在长上下文的中间位置时，模型检索性能下降
+      30% 以上。即使窗口足够大，模型的注意力分布也不均匀——开头和结尾的信息更容易被注意到。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">更严重的问题是：上下文超过窗口容量约
+      40% 后，性能开始急剧下降，不是线性衰减，是断崖式。Agent 在长任务中&quot;跑着跑着就不对了&quot;，很多时候不是推理能力退化，而是上下文已经腐化——充满了过时的工具输出、无关的中间步骤、早期的错误假设。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">五种生产级上下文管理策略：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">1. 压缩</strong>，把历史对话摘要化，保留关键决策和未解决问题，丢弃冗余的工具输出。ACON
+      研究表明：优先保留推理链（Thought）而非原始工具输出（Observation），token 减少 26-54%，准确率保持 95% 以上。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">2. 观察遮蔽</strong>，JetBrains 的 Junie
+      实践：隐藏旧的工具输出内容，但保留工具调用记录可见。模型知道&quot;我之前运行了测试&quot;，但不需要再看一遍完整的测试输出。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">3. JIT 检索</strong>，不预加载整个代码库，需要看文件时用
+      grep/glob/head 按需拉取。Claude Code 的实践：95% 的上下文节省来自按需加载而非全量预加载。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">4. 工具输出卸载</strong>，2000
+      行的日志不塞进上下文，写入文件系统，上下文里只保留一句摘要和文件路径，需要时再读取特定部分。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">5. 注意力工程</strong>，把最关键的信息放在 prompt
+      的开头和结尾。系统指令放最前面，当前任务放最后面，中间是可以被&quot;忽略&quot;的历史。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      3. 决策层：模型怎么选择下一步</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">核心矛盾：搜索空间指数爆炸，而计算预算有限。</strong>
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      每一步决策，模型面对的是一个巨大的动作空间：调用哪个工具、传什么参数、还是先推理一下、还是回头检查之前的假设。决策层的设计决定了
+      Agent 在这个空间里怎么搜索、搜索多深、什么时候停下来。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      3.1 执行循环的三代演化</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Agent
+      的决策机制经历了三代演化，每代增加了计算成本，也抬高了能力上限。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img src="img-03-three-gen-loops.svg"
+                                                                                        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-03-three-gen-loops.svg"
+                                                                                        style="display: block; width: 100%; margin: 1.5em auto;">
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第一代：ReAct（2023）</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">ReAct 确立了至今所有 Agent
+      的基础循环：Thought → Action → Observation。</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Thought: 我需要找到这个函数的定义
+Action: Search[&quot;def calculate_total&quot;]
+Observation: Found in src/billing.py, line 47-62
+Thought: 看到了，问题在第 53 行的类型转换
+Action: Edit[src/billing.py, line 53, ...]
+Observation: File updated successfully" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Thought:&nbsp;我需要找到这个函数的定义<br>Action:&nbsp;Search[&quot;def&nbsp;calculate_total&quot;]<br>Observation:&nbsp;Found&nbsp;in&nbsp;src/billing.py,&nbsp;line&nbsp;47-62<br>Thought:&nbsp;看到了，问题在第&nbsp;53&nbsp;行的类型转换<br>Action:&nbsp;Edit[src/billing.py,&nbsp;line&nbsp;53,&nbsp;...]<br>Observation:&nbsp;File&nbsp;updated&nbsp;successfully</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      推理和行动必须交替进行。纯推理（Chain-of-Thought）会产生幻觉，模型编造不存在的事实；纯行动（无 Thought
+      直接调用工具）会盲目执行，模型不知道为什么要做这一步。ReAct 通过显式的 Thought 步骤迫使模型先说清楚&quot;我为什么做这一步&quot;，再通过
+      Observation 用真实的环境反馈纠正推理。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">HotpotQA 上的幻觉率从 56% 降到接近
+      0%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">但 ReAct
+      有一个局限：它是单线的，每一步做完就往前走，不回头。如果某一步走错了，后面所有步骤都建立在错误的基础上。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第二代：Reflexion（2023）</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Reflexion 在 ReAct
+      的基础上加了一层：如果任务失败了，不是简单重试，而是先反思&quot;为什么失败了&quot;，把反思结果写入记忆，下次避免同样的错误。</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Trial 1: 尝试 → 失败（测试不通过）
+    ↓
+反思: &quot;我没有考虑到空数组的边界情况&quot;
+    ↓
+存入 episodic memory
+    ↓
+Trial 2: 读取反思 → 调整方案 → 尝试 → 成功" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Trial&nbsp;1:&nbsp;尝试&nbsp;→&nbsp;失败（测试不通过）<br>&nbsp;&nbsp;&nbsp;&nbsp;↓<br>反思:&nbsp;&quot;我没有考虑到空数组的边界情况&quot;<br>&nbsp;&nbsp;&nbsp;&nbsp;↓<br>存入&nbsp;episodic&nbsp;memory<br>&nbsp;&nbsp;&nbsp;&nbsp;↓<br>Trial&nbsp;2:&nbsp;读取反思&nbsp;→&nbsp;调整方案&nbsp;→&nbsp;尝试&nbsp;→&nbsp;成功</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">这是一种&quot;语言强化学习&quot;——不需要更新模型权重，用自然语言作为学习的介质。HumanEval（代码生成）的
+      pass@1 从 67% 提升到 91%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">但 Reflexion
+      也有局限：它只能在失败后学习。对于需要在行动前就深度规划的问题（比如博弈、优化），它仍然是被动的。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第三代：LATS（2024）</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">LATS（Language Agent Tree
+      Search）把蒙特卡洛树搜索（MCTS）引入 Agent 决策。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      不再是单线执行，而是构建一棵搜索树：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Root: 当前状态
+├── Action A (评估分: 0.7)
+│   ├── Action A1 (0.9) ← 最佳路径
+│   └── Action A2 (0.3) ← 被剪枝
+├── Action B (0.4) ← 低分，不展开
+└── Action C (0.6)
+    └── ..." data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Root:&nbsp;当前状态<br>├──&nbsp;Action&nbsp;A&nbsp;(评估分:&nbsp;0.7)<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;Action&nbsp;A1&nbsp;(0.9)&nbsp;←&nbsp;最佳路径<br>│&nbsp;&nbsp;&nbsp;└──&nbsp;Action&nbsp;A2&nbsp;(0.3)&nbsp;←&nbsp;被剪枝<br>├──&nbsp;Action&nbsp;B&nbsp;(0.4)&nbsp;←&nbsp;低分，不展开<br>└──&nbsp;Action&nbsp;C&nbsp;(0.6)<br>&nbsp;&nbsp;&nbsp;&nbsp;└──&nbsp;...</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">LLM 承担三个角色：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 生成候选动作（树的展开）</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 评估状态好坏（价值函数）</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        失败时生成反思（指导未来搜索方向）
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">HumanEval 达到 92.7%
+      pass@1。但代价是巨大的——每一步决策需要多次 LLM 调用（生成 + 评估 + 可能的反思），成本是 ReAct 的 5-10 倍。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">三代对比</strong>：</p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          代
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          方法
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          循环结构
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          计算代价
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          适用场景
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">1
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">ReAct
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Think →
+            Act → Observe
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">低（1次调用/步）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">常规任务
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">2
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Reflexion
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">执行 → 失败
+            → 反思 → 重试
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">中（失败时额外调用）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">需从错误中学习
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">3
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">LATS
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">多路搜索 +
+            评估 + 回溯
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高（多次调用/步）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高价值复杂决策
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      3.2 任务分解：把大问题变成小问题</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">一个复杂任务（&quot;修复这个 bug&quot;）如果不拆分，模型要在一个巨大的搜索空间中找到完整路径。拆分后（&quot;1.
+      定位错误 2. 理解原因 3. 写修复 4. 写测试 5. 验证&quot;），每一步的搜索空间大幅缩小。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">几种分解策略：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Orchestrator-Workers</strong>，一个中心 LLM
+      负责拆任务和分配，多个 worker 执行具体子任务，最后中心 LLM 合并结果，适合子任务之间相对独立的情况（如多文件修改）。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">极端分解</strong>（Agent Patterns
+      Atlas），每一步只做一件最小的、可验证的事。不是&quot;实现登录功能&quot;，而是&quot;创建 login 函数签名 → 实现参数验证 →
+      实现数据库查询 → 实现返回值 → 写测试&quot;，每步完成后立刻验证，错误不会累积。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">自动课程</strong>（Voyager），Agent
+      自己生成下一个目标，不需要人类预定义任务列表。Voyager 在 Minecraft 中根据当前状态和已有技能，自动生成&quot;下一个值得尝试的事情&quot;，灵活但也最难控制。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Routing</strong>，根据输入类型分流到不同的专用路径。客服系统根据问题类型（退款/技术/咨询）路由到不同的处理
+      Agent。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      3.3 规划的工程权衡</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">过度规划是一个常见错误。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">模型花了 10 步生成了一个完美的计划，然后第
+      2 步的执行结果就偏离了计划的假设，后面 8 步全部作废。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Anthropic 的工程原则直接：<strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">从最简单的方案开始</strong>。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">实际的选择逻辑：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 任务步骤固定？→ 用 Prompt
+        Chaining（确定性流程）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 步骤不固定但可收敛？→ 用
+        ReAct（单步循环，随时调整）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 子任务明确可独立？→ 用
+        Orchestrator-Workers（分治）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 高价值且可回溯？→ 用
+        LATS（搜索树）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 完全开放式？→ 用自动课程（让 Agent
+        自己定义目标）
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">一条经验规则：如果 Agent 花了 30% 以上的
+      token 在&quot;规划&quot;上而不是&quot;执行&quot;上，规划粒度可能太细了，降低粒度，让执行层的反馈来指导后续方向。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      4. 行动层：模型能对环境做什么</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">核心矛盾：工具越多能力越强，但误选率也越高。</strong>
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">行动层定义了 Agent 的&quot;手&quot;——它能触达什么、改变什么。工具设计的好坏直接影响
+      Agent 能否把正确的决策转化为正确的执行。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      4.1 工具设计原则</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Anthropic 在 SWE-bench 开发中积累了一条核心经验：<strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">花在工具设计上的时间应该超过花在 prompt
+      上的时间</strong>。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">五条设计原则：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">1. 格式自然</strong>，用模型训练数据中高频出现的格式。Markdown
+      比自定义 DSL 好，JSON 比 YAML 好（出现频率更高）。函数名用英文动词+名词（<code class="codespan"
+                                                                                style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">search_files</code>
+      而不是 <code class="codespan"
+                   style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">fs_query_op</code>）。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">2. 文档完整</strong>，工具描述不是给人看的，是给模型看的。它需要：一句话说清用途、参数的类型和约束、1-2
+      个使用示例、失败时返回什么、和相邻工具的区别（&quot;用 <code class="codespan"
+                                                                style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">edit_file</code>
+      修改已有文件，用 <code class="codespan"
+                            style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">create_file</code>
+      创建新文件，不要混用&quot;）。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">3. 防错设计</strong>，强制绝对路径（消灭&quot;当前目录是哪里&quot;的歧义），参数用枚举而不是自由文本（<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">mode:
+      &quot;append&quot; | &quot;overwrite&quot;</code> 而不是 <code class="codespan"
+                                                                     style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">mode:
+      string</code>），必填参数和可选参数明确区分。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">4. 输出可读</strong>，工具的返回值是 Agent
+      的感知输入。一个返回 5000 行 raw JSON 的工具，等于给 Agent 塞了一堆噪音。结构化、摘要化、只返回 Agent 需要的信息。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">5. 边界清晰</strong>，每个工具做一件事，工具之间不重叠。如果两个工具的使用场景模糊（&quot;什么时候用
+      search 什么时候用 grep？&quot;），模型就会出错。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">可用工具超过 30
+      个时，模型的工具选择准确率开始明显下滑。改用动态加载（每步只暴露 Top 5-10 个最相关的工具），准确率提升约 30%。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      4.2 动态工具管理</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">在一个复杂的 Agent
+      系统中，可能有几十个甚至上百个工具。全部塞进 prompt，上下文爆炸；全部隐藏，Agent 不知道自己能做什么。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">几种平衡策略：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">静态全量暴露</strong>，简单，适合工具数 &lt; 10
+      的场景。所有工具的 schema 始终在 prompt 里，模型随时知道自己的全部能力；但随着工具增加，prompt 越来越长，噪音越来越大。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">动态加载</strong>，根据当前任务阶段，只暴露相关的工具子集。写代码时暴露文件操作工具，运行测试时暴露执行工具，搜索时暴露搜索工具。Vercel
+      在 v0 中删掉了 80% 的工具，反而得到了更好的结果。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Skill Discovery</strong>（Agent Patterns
+      Atlas），Agent 运行时自行发现可用工具，不是预定义工具列表，而是通过查询一个工具注册表来获取当前可用的能力，适合工具集合会动态变化的场景（如
+      MCP 服务器连接/断开）。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">技能库</strong>（Voyager），最激进的方案：Agent
+      不仅使用预定义工具，还能创造新工具。Voyager 把执行成功的代码片段自动存入技能库，下次遇到类似任务时检索复用，工具集合随着
+      Agent 的经验增长而增长。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      4.3 行动的安全边界</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Agent
+      能做的事越多，出错的后果就越严重，行动层必须有安全机制。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">沙箱执行</strong>，文件操作限制在特定目录，网络请求限制白名单，代码执行在容器中，Agent
+      不能触达它不应该触达的东西。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">权限最小化</strong>（Constrained Tool Use），Agent
+      只能用完成当前任务所需的最小工具集，不需要删除文件的任务就不暴露删除工具。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">不可逆操作确认</strong>，删除、发布、支付这类操作在执行前必须经过人类确认。错误的代价不对称，这是结构性要求，不是信任问题。
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Handoff 机制</strong>（OpenAI Agents SDK），当一个
+      Agent 判断当前任务超出自己能力范围时，把控制权转移给另一个更合适的 Agent，转移时携带完整的对话历史，确保上下文不丢失。
+    </p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      4.4 代码即行动</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Voyager 引入了一种不同于 JSON
+      工具调用的行动方式：直接生成可执行代码。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">传统方式：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-json"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;"><span
+        class="hljs-punctuation">{</span><span class="hljs-attr" style="color: #005cc5;">&quot;tool&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-string"
+                                               style="color: #032f62;">&nbsp;&quot;move_to&quot;</span><span
+        class="hljs-punctuation">,</span><span class="hljs-attr"
+                                               style="color: #005cc5;">&nbsp;&quot;args&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-punctuation">&nbsp;{</span><span class="hljs-attr"
+                                                                                            style="color: #005cc5;">&quot;x&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-number" style="color: #005cc5;">&nbsp;100</span><span
+        class="hljs-punctuation">,</span><span class="hljs-attr" style="color: #005cc5;">&nbsp;&quot;y&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-number" style="color: #005cc5;">&nbsp;64</span><span
+        class="hljs-punctuation">,</span><span class="hljs-attr" style="color: #005cc5;">&nbsp;&quot;z&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-number" style="color: #005cc5;">&nbsp;200</span><span
+        class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span
+        class="hljs-punctuation"><br>{</span><span class="hljs-attr"
+                                                   style="color: #005cc5;">&quot;tool&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-string"
+                                               style="color: #032f62;">&nbsp;&quot;mine_block&quot;</span><span
+        class="hljs-punctuation">,</span><span class="hljs-attr"
+                                               style="color: #005cc5;">&nbsp;&quot;args&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-punctuation">&nbsp;{</span><span class="hljs-attr"
+                                                                                            style="color: #005cc5;">&quot;block_type&quot;</span><span
+        class="hljs-punctuation">:</span><span class="hljs-string"
+                                               style="color: #032f62;">&nbsp;&quot;diamond_ore&quot;</span><span
+        class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span></code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Voyager 方式：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-javascript"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;"><span
+        class="hljs-keyword" style="color: #d73a49;">async</span><span class="hljs-keyword" style="color: #d73a49;">&nbsp;function</span><span
+        class="hljs-title function_" style="color: #6f42c1;">&nbsp;mineDiamonds</span>(<span
+        class="hljs-params">bot</span>)&nbsp;{<span class="hljs-keyword"
+                                                    style="color: #d73a49;"><br>&nbsp;&nbsp;await</span>&nbsp;bot.<span
+        class="hljs-title function_" style="color: #6f42c1;">navigate</span>(<span class="hljs-number"
+                                                                                   style="color: #005cc5;">100</span>,<span
+        class="hljs-number" style="color: #005cc5;">&nbsp;64</span>,<span class="hljs-number" style="color: #005cc5;">&nbsp;200</span>);<span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;const</span>&nbsp;block&nbsp;=&nbsp;bot.<span
+        class="hljs-title function_" style="color: #6f42c1;">findBlock</span>(<span class="hljs-string"
+                                                                                    style="color: #032f62;">&#x27;diamond_ore&#x27;</span>,<span
+        class="hljs-number" style="color: #005cc5;">&nbsp;5</span>);<span class="hljs-keyword"
+                                                                          style="color: #d73a49;"><br>&nbsp;&nbsp;if</span>&nbsp;(block)<span
+        class="hljs-keyword" style="color: #d73a49;">&nbsp;await</span>&nbsp;bot.<span class="hljs-title function_"
+                                                                                       style="color: #6f42c1;">dig</span>(block);<br>}</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">代码的优势：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">组合性</strong>：复杂行为由简单函数组合，不需要为每种组合定义新工具
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">可验证</strong>：代码可以运行、可以测试、可以 type
+        check
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">可存储</strong>：成功的代码直接入库，变成新的技能
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">代价是需要更严格的沙箱。JSON
+      工具调用的安全边界很清晰（参数验证就够了）；代码执行的安全边界需要容器级别的隔离。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      5. 反馈层：模型怎么知道做对了</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">核心矛盾：即时反馈便宜但浅层，深层反馈有价值但贵。</strong>
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">没有反馈的 Agent
+      是一个开环系统，它不知道自己的行动产生了什么效果，只能盲目前进，错误会累积，一步错步步错。反馈层闭合了这个环路，让 Agent
+      能够感知行动的结果并据此调整。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      5.1 反馈信号的层次</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">
+      不同类型的反馈，在延迟、成本和可靠性上差异巨大：</p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          类型
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          来源
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          延迟
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          可靠性
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          成本
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">执行反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">编译器、测试、API
+            返回码
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">即时
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高（确定性）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">低
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">环境反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">状态变化观察
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">秒级
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">中
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">低
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">评估反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">另一个 LLM
+            评判
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">秒级
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">中（有偏差）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">中
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">反思反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">模型自我审视
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">秒级
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">低（可能过度纠正）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">中
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">人类反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">用户确认/纠正
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">分钟~小时
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">工程原则：<strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">能用确定性验证就不用 LLM 判断，能用 LLM
+      判断就不打扰人类</strong>。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      5.2 验证机制</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Anthropic 推荐三类验证方式：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">规则验证</strong>，测试通过了吗？类型检查过了吗？Linter
+      有没有报错？这是最可靠的反馈——确定性的、无偏差的、成本几乎为零。代码任务几乎都有规则验证的条件，优先用它。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">视觉验证</strong>，UI 任务中，用 Playwright
+      截图，让模型或另一个评估器判断&quot;界面是否符合预期&quot;，适合无法用代码断言的视觉结果。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">语义验证</strong>（LLM-as-Judge），用一个独立的
+      LLM（最好是不同的模型或不同的 prompt）来评估结果质量，适合开放式任务（&quot;这段代码的可读性好不好？&quot;）。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Claude Code
+      的实践验证了这一点：给模型一种验证自己工作的方式（哪怕只是运行测试），质量提升 2-3 倍。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">Evaluator-Optimizer 模式</strong>：把验证做成迭代循环。一个
+      LLM 生成结果，另一个 LLM 评估并给出改进建议，然后第一个根据建议修改，适合翻译、写作等需要打磨的任务。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      5.3 自我反思：强大但危险</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Reflexion 证明了自我反思的价值——Agent
+      在失败后生成文本反思，存入记忆，下次避免同样的错误。HumanEval 从 67% 到 91%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">但反思有一个被低估的风险：<strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">过度自我纠正</strong>。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">研究发现，当模型被指示&quot;再检查一下你的答案&quot;时，在
+      58% 的情况下，它会把原本正确的答案改成错误的。这不是 bug，而是反思机制的结构性问题——模型倾向于&quot;找到问题&quot;来证明反思是有意义的，即使实际上没有问题。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">工程实践中的约束：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">限制反思次数</strong>：最多 2-3 次，无限反思不会收敛，只会震荡。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">区分&quot;信心低&quot;和&quot;确认出错&quot;</strong>：信心低但无外部证据表明出错，就不反思；只有外部反馈（测试失败、用户否定）明确表明出错时才触发反思。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">外部验证优先</strong>：能用测试验证的就跑测试，不要让模型&quot;自己判断自己对不对&quot;。编译器永远比内省可靠。
+      </li>
+    </ul>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      5.4 错误恢复：不要从头重来</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">AgentDebug（2025）的核心洞察：当 Agent
+      失败时，不要从头重跑整个任务，先定位失败点在执行链的哪个位置，然后只从那个点重新执行。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">两类根因：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">记忆错误</strong>：Agent 忘了关键信息（上下文被截断、检索没命中）→
+        修复：补充记忆，从遗忘点重跑
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">推理错误</strong>：Agent 从正确信息中得出了错误结论
+        → 修复：换推理策略，从错误决策点重跑
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">效果：成功率提升 26%。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">错误分类决定恢复策略：</p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          错误类型
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          策略
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          示例
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">瞬态
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">重试（指数退避）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">API 超时、限流
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">语义
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">换策略
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">模型被内容过滤阻断
+            → 改写 prompt
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">规划
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">从当前状态重新规划
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">原计划不可行
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">记忆
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">重新检索上下文
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">关键信息丢失
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">不可恢复
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">升级到人类
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">任务本身不可能
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">VIGIL</strong>（2025）更进一步：运行时持续监控 Agent
+      行为，检测到异常（循环、延迟飙升、输出退化）时自动诊断并生成修复方案，不需要等到任务完全失败。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      5.5 人机协作：架构的一部分，不是兜底</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">Human-in-the-Loop 不是&quot;Agent
+      不行了找人帮忙&quot;，它是架构设计的一部分——在特定的节点上，人类介入是比自动化更优的选择。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">何时交给人类：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">不可逆操作前</strong>：删除数据、发布上线、发送邮件
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">信心低于阈值</strong>：模型不确定但又无法通过更多计算变得确定
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">检测到异常模式</strong>：循环、矛盾、持续失败（Red-Flagging）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">高价值决策</strong>：影响大但频率低的判断
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">人类检查点的位置应该预先设计好，而不是&quot;失败了就问人&quot;。好的人机协作像高速公路上的收费站——在关键节点短暂停下确认，而不是随时随地可能被打断。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      6. 四层耦合：一个完整的例子</h2>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">四层不是独立的，用一个代码修复 Agent
+      的完整执行过程来展示它们之间的耦合：</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><img src="img-04-three-rounds.svg"
+                                                                                        data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-loop/img-04-three-rounds.svg"
+                                                                                        style="display: block; width: 100%; margin: 1.5em auto;">
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">任务</strong>：修复一个 GitHub Issue——&quot;用户注册时邮箱验证不生效&quot;
+    </p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">代码库的初始状态：<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">auth/register.py</code>
+      处理注册逻辑，<code class="codespan"
+                         style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">auth/validators.py</code>
+      里已有 <code class="codespan"
+                   style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">validate_email</code>
+      函数，但 <code class="codespan"
+                    style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">register.py</code>
+      从未调用它。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第一轮循环：</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">感知</strong>：Agent 读取 Issue 描述 + 相关代码文件（<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">auth/register.py</code>）。ACI
+      设计决定了它看到的是带行号的代码片段而不是整个文件。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">决策</strong>（ReAct）：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Thought: Issue 提到邮箱验证不生效。我需要找到验证逻辑在哪里。
+Action: Search[&quot;email_validation&quot; in auth/]" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Thought:&nbsp;Issue&nbsp;提到邮箱验证不生效。我需要找到验证逻辑在哪里。<br>Action:&nbsp;Search[&quot;email_validation&quot;&nbsp;in&nbsp;auth/]</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">行动</strong>：搜索工具执行，返回 <code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">auth/validators.py:23</code>
+      有一个 <code class="codespan"
+                   style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">validate_email</code>
+      函数。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">反馈</strong>：环境反馈（搜索成功返回结果）→
+      更新感知（现在知道了验证函数的位置）</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第二轮循环：</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">感知</strong>：读取 <code class="codespan"
+                                                                                                style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">auth/validators.py</code>
+      的第 20-40 行。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">决策</strong>：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Thought: validate_email 函数存在，但 register 函数没有调用它。问题在 register.py 而不是 validators.py。
+Action: Edit[auth/register.py, line 45, add: if not validate_email(email): raise ValidationError(...)]"
+                     data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Thought:&nbsp;validate_email&nbsp;函数存在，但&nbsp;register&nbsp;函数没有调用它。问题在&nbsp;register.py&nbsp;而不是&nbsp;validators.py。<br>Action:&nbsp;Edit[auth/register.py,&nbsp;line&nbsp;45,&nbsp;add:&nbsp;if&nbsp;not&nbsp;validate_email(email):&nbsp;raise&nbsp;ValidationError(...)]</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">行动</strong>：编辑工具执行修改。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">反馈</strong>：运行测试 → 测试失败。</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending
+                     data-raw-code="Error: NameError: validate_email is not defined" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Error:&nbsp;NameError:&nbsp;validate_email&nbsp;is&nbsp;not&nbsp;defined</code></pre>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">第三轮循环（反思触发）：</strong></p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">反馈 → 感知更新</strong>：测试失败的错误信息进入上下文。Agent
+      同时触发 Reflexion：&quot;我忘了添加 import 语句。&quot;</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">决策</strong>：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="Thought: 我需要在文件顶部 import validate_email。
+Action: Edit[auth/register.py, line 3, add: from auth.validators import validate_email]" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">Thought:&nbsp;我需要在文件顶部&nbsp;import&nbsp;validate_email。<br>Action:&nbsp;Edit[auth/register.py,&nbsp;line&nbsp;3,&nbsp;add:&nbsp;from&nbsp;auth.validators&nbsp;import&nbsp;validate_email]</code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">行动</strong>：编辑执行。</p>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">反馈</strong>：运行测试 → 全部通过 ✓</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">四层耦合关系：</strong></p>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          耦合
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          表现
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          设计影响
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">感知 × 决策
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            搜索结果的格式直接影响推理质量
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">ACI
+            设计决定了决策层的输入质量
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">决策 × 行动
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">&quot;添加验证&quot;的规划粒度必须匹配
+            Edit 工具的能力
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            规划粒度要适配工具粒度
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">行动 × 反馈
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Edit 的返回&quot;成功&quot;不够，需要测试才能验证真正的正确性
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">行动结果 ≠
+            任务成功，需要独立验证
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">反馈 × 感知
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">测试失败的错误信息
+            + 反思 = 下一轮的新感知
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            反馈质量决定了下一轮感知的信息量
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">如果四层之间的接口设计不匹配，系统性能会远低于各层单独的能力</strong>。一个优秀的决策层配上一个返回
+      raw dump 的感知层，整体表现会很差。SWE-agent 的实验证明了这一点——改善感知层的格式（ACI），在不改变决策层的情况下，整体性能翻了
+      3 倍。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      7. 工程实践 Checklist</h2>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      7.1 架构选择决策树</h3>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="你的任务步骤是否固定？
+├── 是 → Workflow
+│   ├── 步骤独立？→ Parallelization
+│   ├── 步骤有序？→ Prompt Chaining
+│   └── 需要分流？→ Routing
+└── 否 → 步骤数可预测吗？
+    ├── 是 → Orchestrator-Workers
+    └── 否 → Agent（自主循环）
+        ├── 常规任务 → ReAct
+        ├── 需要从失败中学习 → + Reflexion
+        └── 高价值复杂决策 → + LATS" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">你的任务步骤是否固定？<br>├──&nbsp;是&nbsp;→&nbsp;Workflow<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;步骤独立？→&nbsp;Parallelization<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;步骤有序？→&nbsp;Prompt&nbsp;Chaining<br>│&nbsp;&nbsp;&nbsp;└──&nbsp;需要分流？→&nbsp;Routing<br>└──&nbsp;否&nbsp;→&nbsp;步骤数可预测吗？<br>&nbsp;&nbsp;&nbsp;&nbsp;├──&nbsp;是&nbsp;→&nbsp;Orchestrator-Workers<br>&nbsp;&nbsp;&nbsp;&nbsp;└──&nbsp;否&nbsp;→&nbsp;Agent（自主循环）<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├──&nbsp;常规任务&nbsp;→&nbsp;ReAct<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├──&nbsp;需要从失败中学习&nbsp;→&nbsp;+&nbsp;Reflexion<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└──&nbsp;高价值复杂决策&nbsp;→&nbsp;+&nbsp;LATS</code></pre>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      7.2 四层设计清单</h3>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">感知层</strong>：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        观察格式是否用了模型训练数据中的自然格式？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        长期记忆是否有语义检索机制？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 是否有上下文压缩/裁剪策略？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 关键信息是否放在 prompt
+        首尾？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 工具输出是否结构化（而非 raw
+        dump）？
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">决策层</strong>：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        循环复杂度是否匹配任务复杂度？（不过度规划）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        是否有任务分解（一步不做太多事）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 是否有终止条件（最大轮次 +
+        token 预算）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 失败时是否有回退策略？</li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">行动层</strong>：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        工具定义是否包含示例、边界、失败行为？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 工具数量是否控制在 10
+        个以内（或动态加载）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 是否有执行沙箱？</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 不可逆操作是否有确认机制？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        相似工具之间的边界是否写清楚了？
+      </li>
+    </ul>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><strong
+        style="color: #0F4C81; font-weight: bold; font-size: inherit;">反馈层</strong>：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        是否有确定性验证（测试/编译/类型检查）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        反思机制是否有次数限制（≤3）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        错误是否分类处理（瞬态/语义/不可恢复）？
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ] 是否有人类升级路径？</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• [ ]
+        反馈信息是否足够具体（定位到行/函数/原因）？
+      </li>
+    </ul>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      7.3 常见坑与修复</h3>
+    <section
+        style="font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 16px; line-height: 1.75; text-align: left; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          坑
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          症状
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          根因
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: rgba(0, 0, 0, 0.05);">
+          修复
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">感知过载
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            模型忽略关键信息、回答偏题
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">上下文太长或格式混乱
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">JIT 检索 +
+            注意力工程
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">规划过深
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">计划完美但执行偏离
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">前几步的假设就错了
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">用 ReAct
+            替代长期规划
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">工具过多
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">频繁选错工具
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            工具描述重叠、数量超限
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">动态加载
+            Top 5-10
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">反思过度
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">正确答案被改成错误
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">无限自我怀疑
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">限 2-3 次
+            + 外部验证优先
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">无终止条件
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">无限循环、成本失控
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">缺少退出机制
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">轮次上限 +
+            token 预算双保险
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">反馈缺失
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">错误累积不可逆
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">每步执行后无验证
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">每步验证 +
+            状态检查点
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">层间不匹配
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            各层单独可用但组合表现差
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">接口格式不兼容
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            检查各层的输入输出格式是否对齐
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 8px; border-left: 3px solid #0F4C81; margin: 2em 8px 0.75em 0; color: #3f3f3f; font-size: calc(16px * 1.1); font-weight: bold; line-height: 1.2;">
+      7.4 一个最小可运行的 Agent 骨架</h3>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 8px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-python"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;"><span
+        class="hljs-keyword" style="color: #d73a49;">def</span><span class="hljs-title function_"
+                                                                     style="color: #6f42c1;">&nbsp;run_agent</span>(<span
+        class="hljs-params">task:<span class="hljs-built_in" style="color: #e36209;">&nbsp;str</span>,&nbsp;tools:<span
+        class="hljs-built_in" style="color: #e36209;">&nbsp;list</span>,&nbsp;max_turns:<span class="hljs-built_in"
+                                                                                              style="color: #e36209;">&nbsp;int</span>&nbsp;=<span
+        class="hljs-number" style="color: #005cc5;">&nbsp;20</span></span>):<br>&nbsp;&nbsp;&nbsp;&nbsp;history&nbsp;=&nbsp;[]<br>&nbsp;&nbsp;&nbsp;&nbsp;memory&nbsp;=&nbsp;load_long_term_memory(task)<span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;for</span>&nbsp;turn<span
+        class="hljs-keyword" style="color: #d73a49;">&nbsp;in</span><span class="hljs-built_in" style="color: #e36209;">&nbsp;range</span>(max_turns):<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;感知层：组装上下文</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;context&nbsp;=&nbsp;assemble_context(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;system_prompt=SYSTEM,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tools=select_relevant_tools(tools,&nbsp;history),<span
+        class="hljs-comment" style="color: #6a737d;">&nbsp;&nbsp;#&nbsp;动态工具加载</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory=memory,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;history=compress_if_needed(history),<span
+        class="hljs-comment" style="color: #6a737d;">&nbsp;&nbsp;#&nbsp;上下文管理</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;task=task<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;决策层：模型推理</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;response&nbsp;=&nbsp;llm(context)<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;终止条件</span><span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if</span><span
+        class="hljs-keyword" style="color: #d73a49;">&nbsp;not</span>&nbsp;response.tool_calls:<span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;return</span>&nbsp;response.text<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;行动层：执行工具</span><span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;for</span>&nbsp;call<span
+        class="hljs-keyword" style="color: #d73a49;">&nbsp;in</span>&nbsp;response.tool_calls:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;result&nbsp;=&nbsp;sandbox_execute(call)<span
+        class="hljs-comment" style="color: #6a737d;">&nbsp;&nbsp;#&nbsp;沙箱执行</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;history.append({<span
+        class="hljs-string" style="color: #032f62;">&quot;call&quot;</span>:&nbsp;call,<span class="hljs-string"
+                                                                                             style="color: #032f62;">&nbsp;&quot;result&quot;</span>:&nbsp;result})<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;反馈层：验证</span><span
+        class="hljs-keyword" style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if</span>&nbsp;should_verify(response.tool_calls):<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;verification&nbsp;=&nbsp;run_tests()<span
+        class="hljs-comment" style="color: #6a737d;">&nbsp;&nbsp;#&nbsp;确定性验证</span><span class="hljs-keyword"
+                                                                                               style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if</span><span
+        class="hljs-keyword" style="color: #d73a49;">&nbsp;not</span>&nbsp;verification.passed:<span
+        class="hljs-comment" style="color: #6a737d;"><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;触发反思</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reflection&nbsp;=&nbsp;reflect(history,&nbsp;verification.error)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;memory.add_episode(reflection)<span
+        class="hljs-keyword"
+        style="color: #d73a49;"><br>&nbsp;&nbsp;&nbsp;&nbsp;<br>&nbsp;&nbsp;&nbsp;&nbsp;return</span><span
+        class="hljs-string" style="color: #032f62;">&nbsp;&quot;Max&nbsp;turns&nbsp;reached&nbsp;without&nbsp;completion&quot;</span></code></pre>
+    <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">这 30
+      行代码覆盖了四层的核心逻辑。生产级系统在此基础上增加：错误分类与恢复、人机检查点、可观测性（日志/追踪）、持久化（跨会话状态）。</p>
+    <hr class="hr"
+        style="border-style: solid; border-width: 2px 0 0; border-color: rgba(0, 0, 0, 0.1); -webkit-transform-origin: 0 0; -webkit-transform: scale(1, 0.5); transform-origin: 0 0; transform: scale(1, 0.5); height: 0.4em; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: table; padding: 0 0.2em; margin: 4em auto 2em; color: #fff; background: #0F4C81; font-size: calc(16px * 1.2); font-weight: bold; text-align: center;">
+      参考来源</h2>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">CoALA</strong>（arXiv:2309.02427）— 最完整的
+        Agent 认知架构形式化。如果你只读一篇理论论文，读这篇，它提供了描述任何 Agent 系统的统一词汇。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Anthropic: Building Effective Agents</strong> —
+        最实用的工程原则。Workflow vs Agent 的选择、工具设计、何时不用 Agent，适合正在做架构决策的团队。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Lilian Weng: LLM Powered Autonomous
+        Agents</strong> — 最全面的综述。Planning + Memory + Tool Use 的三件套框架，适合建立全局视角。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">4. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">ReAct → Reflexion → LATS</strong> —
+        决策层三代演化的论文三件套，按顺序读完就理解了执行循环为什么是现在这个样子。
+        <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f;">
+          <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• ReAct: arXiv:2210.03629</li>
+          <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• Reflexion:
+            arXiv:2303.11366
+          </li>
+          <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• LATS: arXiv:2310.04406</li>
+        </ul>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">5. <strong
+          style="color: #0F4C81; font-weight: bold; font-size: inherit;">Agent Patterns Atlas</strong>（agents.kour.me）—
+        30+ 可复用工程模式，含代码示例，适合已经理解原理、需要具体实现参考的开发者。
+      </li>
+    </ol>
+
+
+  </section>
+</div>
+</body>
+</html>

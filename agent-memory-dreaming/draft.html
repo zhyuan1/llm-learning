@@ -1,0 +1,1599 @@
+<!doctype html>
+<html style="      ">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent 不是在工作时变强的：离线记忆整合的三条技术路线</title>
+  <meta name="description"
+        content="Harvey 是一家用 AI 做法律工作的公司。2026 年 5 月，他们给自己的 Agent 开了一个叫 Dreaming 的功能。没换模型，没改 prompt，任务完成率直接涨了 6 倍。">
+
+
+</head>
+<body
+    style="padding: 24px; background: #ffffff; max-width: 860px; margin: 0 auto; text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2;">
+<div id="output">
+  <section class="container"
+           style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px;">
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all; margin-top: 0 !important;">
+      <img src="imgs/cover.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/cover.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Harvey 是一家用 AI 做法律工作的公司。2026 年 5 月，他们给自己的 Agent 开了一个叫 Dreaming 的功能。没换模型，没改
+      prompt，任务完成率直接涨了 6 倍。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      原因很简单：法律工作里有大量重复性流程错误。Agent 第一次犯了，第二次还犯，第一百次照样犯，因为每次 session
+      结束后它什么都不记得。Dreaming 做的事情是：在两次 session
+      之间，回顾一下历史，把反复出现的错误提取成一条规则。下次再遇到同类任务，规则自动生效。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这不是什么新概念。人类的大脑每天都在做类似的事，不是在做事的时候学得最快，而是在睡觉的时候。神经科学里有一个精确的描述：睡眠期间，海马体把白天编码的经历以加速模式重播给新皮层，新皮层在没有新输入干扰的情况下慢慢将其整合成长期知识。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Agent 现在也开始睡觉了。<strong style="color: #D97757; font-weight: bold; font-size: inherit;">Agent
+      在两次工作之间到底要做什么，才能让自己下一次表现更好？</strong></p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      生物学原型：大脑在睡觉时做了什么</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Anthropic 在 Dreaming
+      的设计文档中明确对标了海马体记忆整合。这不是一个文学比喻，是架构设计的参考来源。生物学机制中的每个关键节点都能在工程实现中找到对应物。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      双系统分工</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      大脑做记忆不是把经历写进一个数据库这么简单。它有两套系统在平行运作：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">海马体</strong>负责快速编码。白天发生的事情，你走过的路、说过的话、做过的决定，先被海马体以高保真度记录下来。编码速度快，容量有限，细节丰富但不稳定。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">新皮层</strong>负责长期存储。知识、规则、模式，开车要先看后视镜、这个客户喜欢简洁的报告，这些是新皮层的地盘。学得慢，但一旦学会就很稳定。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      为什么需要两套系统？McClelland 等人在 1995 年提出的 Complementary Learning Systems
+      理论给了精确回答：如果只有一个系统，快速学习新经历会覆盖掉已有的稳定知识。这在机器学习里叫 catastrophic
+      forgetting，生物学里早就解决了，方案就是分成两个系统，各干各的。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      映射到 Agent：session 中的实时交互是海马体编码，快速、详细、不稳定（session
+      结束就丢了）。持久化的记忆系统是新皮层，慢、抽象、稳定。中间那一步怎么做，就是本文的核心问题。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      睡眠重播</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      人不是在睡觉时什么都不干。睡眠的慢波阶段（NREM sleep），海马体中的神经元会以 5 到 20
+      倍速重播白天的活动模式。这个过程有几个关键特征：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">不是完整回放。</strong>重播是选择性的，与奖励相关的经历被优先重播（McNamara
+      et al., 2014）。不是每件事都值得记住。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">需要安静的环境。</strong>重播发生在睡眠中是有原因的：新皮层需要在没有新感觉输入干扰的情况下才能安全地整合新信息。如果边接收新输入边整合旧经历，两套信息会互相干扰。整合必须离线做。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">由三层嵌套振荡协调。</strong>慢振荡（&lt;1
+      Hz）提供时间窗口，睡眠纺锤波（12-16 Hz）促进突触可塑性，海马体 sharp-wave ripples（140-200
+      Hz）在其中触发具体的重播事件。三者精确地嵌套在一起（Latchoumane et al., 2017 称之为三重锁相）。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      突触缩放</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      重播不是唯一的事。睡眠中还发生全局性的突触缩放（synaptic downscaling），所有突触的强度整体下降。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这看起来违反直觉：学习不是要增强连接吗？但缩放的效果是<strong
+        style="color: #D97757; font-weight: bold; font-size: inherit;">提高信噪比</strong>。所有连接都降了，只有那些在重播中被反复激活的连接被选择性保留。重要的模式变得更突出，噪音被压下去。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      de Vivo et al., 2017 用超微结构证据证实了这一点。Yang et al., 2014
+      发现学习后的睡眠促进了特定树突分支上的新突触形成，不是随机加强，是精准加强。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      核心映射</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/biology-mapping.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/biology-mapping.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          生物学
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Agent 系统
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">海马体快速编码
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Session
+            中的实时交互记录
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">睡眠重播
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Dreaming /
+            sleep-time subagent 回顾历史
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">选择性重播
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">只提取有价值的
+            pattern（错误修复、工作流收敛）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">新皮层整合
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            持久化记忆更新（playbook / MemFS / graph store）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">突触缩放
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            记忆修剪、过期删除、信息量对比替换
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">离线无干扰
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Session
+            间隔期，不处理新用户请求
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Anthropic 在官方描述中直接说 Dreaming 模仿的就是 hippocampal memory consolidation。</p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      工程实现：三种做梦的技术路线</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      2026 年中，三种不同的工程路线正在同时被验证。它们解决的是同一个问题，让 Agent 在 session
+      间隙变得更好，但做出了不同的设计取舍。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      Anthropic Dreaming：集中式离线审查</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/dreaming-architecture.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/dreaming-architecture.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Anthropic 的方案最接近生物学原型：显式地在工作和休息之间划了一条线。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">架构基础：Brain-Hands-Session
+        三层解耦。</strong>要理解 Dreaming，先要理解它运行在什么基础设施上。Anthropic 在 2026 年 4 月将 Managed Agents
+      重构为三个独立组件：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Brain</strong>（Harness）：调用 Claude
+        的循环逻辑，无状态，可随时重启
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Hands</strong>（Sandbox）：执行代码的容器，独立于
+        Brain，通过 <code class="codespan"
+                         style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">execute(name,
+          input) → string</code> 接口调用
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Session</strong>（Event Log）：append-only
+        的事件日志，独立于 Brain 和 Hands 之外
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这个三层解耦是 Dreaming 的前提。Session event log 存储了 Agent 所有行为的完整记录，工具调用、推理过程、错误信息、恢复策略，且不会因为
+      harness 重启或容器销毁而丢失。Brain 通过 <code class="codespan"
+                                                    style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">getEvents()</code>
+      按位置切片读取 event stream，通过 <code class="codespan"
+                                             style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">emitEvent(id,
+      event)</code> 写入持久记录。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Dreaming 的输入就是这个 event log。它不需要 Agent 回忆，历史被完整保留在外部存储里，随时可以被重新审视。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">运行时机与生命周期。</strong>Session
+      结束后异步启动，不需要手动触发，系统按调度计划执行。持续时间从几分钟到几十分钟不等，取决于需要审查的历史量。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      关键点：Dreaming 运行时 Agent 不在工作。这对应生物学中不能边接收新输入边整合旧经历的约束，新皮层需要安静环境才能做整合。如果
+      Agent 一边处理用户请求一边做 dreaming，两个过程写入同一个记忆空间会产生竞态。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">三类 Pattern 提取。</strong>Dreaming 遍历历史
+      session 的 transcript，提取：</p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">重复错误</strong>，同样的坑踩了多次。这是最直接的价值来源。一个
+        Agent 如果在三个不同的 session 里都忘记了生成 DOCX 前要先检查字体嵌入，dreaming 会把它提取成一条规则。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">收敛工作流</strong>，多个 agent 独立摸索出的相似做法。如果团队里
+        5 个 agent 不约而同都在处理长 PDF 时先抽取目录再分段阅读，这就是一个有效策略，值得固化为标准流程。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">团队偏好</strong>，跨用户 / 跨 agent
+        共享的模式。比如这个团队的所有用户都要求输出中文、报告格式总是用三级标题。
+      </li>
+    </ol>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      提取结果以 plain-text notes 或 structured playbook 的形式写入记忆。Playbook 不是随意的文本，它是 Agent 后续 session
+      中可以被引用的结构化参考。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">控制权设计：人在回路中。</strong>开发者可以选择两种模式：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 自动模式：Dreaming 发现的 pattern
+        直接生效，下次 session 自动引用
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 手动审核：pattern
+        需要人确认才进入长期记忆
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这个设计决策背后的逻辑是：Dreaming 本身是一个 LLM 推理过程，它在做归纳，从有限样本中提炼规律。归纳天然可能出错。十次巧合可能被提炼成一条规律，然后持续误导后续的每一个
+      session。手动审核是安全阀，但也是瓶颈，如果 dreaming 每天产出几十条 pattern，开发者的审核带宽就成了系统的吞吐上限。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">审计与回滚。</strong>所有写入都在 session
+      event stream 中可见。版本控制是不可变的，每次 dreaming 写入产生一个新版本，旧版本永远可访问。如果某个 pattern
+      后来被发现有问题（误导 Agent 产出错误结果），可以精确定位到是哪次 dreaming 引入的，然后回滚到之前的版本。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      在生产环境中，Agent 为什么突然开始犯这个错这类问题的根因追踪，需要精确的变更历史。Anthropic 把记忆系统做成了一个
+      audit log。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Memory Tool 的存储位置。</strong>Agent
+      的持久记忆挂载在容器内的 <code class="codespan"
+                                     style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/mnt/memory/</code>
+      路径。Claude 通过 bash 和 code-execution 工具读写这些文件。存储后端由客户控制，可以是本地文件系统，也可以是 S3。API
+      使用需要 beta header <code class="codespan"
+                                 style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">context-management-2025-06-27</code>。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      记忆不是 Anthropic 的黑箱，而是客户基础设施的一部分。开发者可以直接检查 Agent 记忆的内容、修改它、用脚本批量更新。Dreaming
+      写入的 playbook 也存在这里，开发者可以 <code class="codespan"
+                                                  style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">cat
+      /mnt/memory/playbooks/</code> 直接看到 dreaming 产出了什么。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Harvey 的 6x
+        为什么在法律领域特别有效。</strong>法律流程的特点是：步骤高度固定、错误具有系统性、同类任务的重复率极高。一个忘记检查管辖区要求的错误可能在
+      50 个不同的案件中以完全相同的方式出现，不是因为 Agent 不懂，而是因为它没有一个持久化的检查清单来提醒自己。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Dreaming 发现这个 pattern 后，一条规则修复全部 50 个案件。6x 数字的来源不是每次任务单独变好了 6
+      倍，而是一类系统性错误被一次性消除，通过率整体跃升。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      反例：如果场景是每次任务都完全不同的创意写作，历史经验几乎无法迁移，dreaming 的 ROI 就趋近于零。6x
+      这个数字高度依赖任务的重复性结构。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      Letta Sleep-time Subagents：分布式自编辑</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Letta（MemGPT 的商业化产品）走了另一条路：不搞集中审查，让每个 Agent 自己管自己的记忆。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">MemGPT 的遗产。</strong>MemGPT（2023，UC
+      Berkeley）的核心洞察是把 LLM 的上下文窗口类比为操作系统的物理内存，有限、易失、需要虚拟化。Agent 通过调用 <code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">core_memory_append</code>、<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">core_memory_replace</code>、<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">archival_memory_search</code>、<code
+        class="codespan"
+        style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">conversation_search</code>
+      等函数主动管理自己的记忆，而不是被动等待系统帮它管。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Letta 后来反复强调的关键原则：</p>
+    <blockquote class="blockquote"
+                style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; font-style: normal; padding: 15px 0; margin: 12px 0; border-left: 7px solid #E4B1A0; border-radius: 10px; color: #3f3f3f; background-color: rgba(255, 255, 255, 0.6);">
+      <p class="p"
+         style="line-height: 2; font-weight: 400; word-break: break-all; display: block; font-size: 1em; letter-spacing: 0.1em; color: #3f3f3f; margin: 0;">
+        &quot;Agents do not passively receive context — they explicitly call memory management functions to move
+        information between tiers.&quot;</p></blockquote>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Agent 不是被动地被注入上下文，而是主动决定自己需要记住什么、检索什么、忘掉什么。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Letta 在此基础上演化出了 MemFS：一个 git-backed 的 markdown 文件系统。记忆不再是 vector database 里的一堆
+      embedding，而是实实在在的文件，Agent 用 bash 工具读写，改完 commit，有完整版本历史。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">MemFS 的结构与记忆分层。</strong></p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 10px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="~/.letta/agents/<agent-id>/memory/
+├── system/          ← 始终加载进 system prompt（工作记忆）
+│   ├── identity.md
+│   ├── rules.md
+│   └── preferences.md
+├── projects/        ← 文件名可见，内容需要检索
+│   ├── project-a.md
+│   └── project-b.md
+└── archive/         ← 长期归档
+    └── ..." data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">~/.letta/agents/&lt;agent-id&gt;/memory/<br>├──&nbsp;system/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←&nbsp;始终加载进&nbsp;system&nbsp;prompt（工作记忆）<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;identity.md<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;rules.md<br>│&nbsp;&nbsp;&nbsp;└──&nbsp;preferences.md<br>├──&nbsp;projects/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←&nbsp;文件名可见，内容需要检索<br>│&nbsp;&nbsp;&nbsp;├──&nbsp;project-a.md<br>│&nbsp;&nbsp;&nbsp;└──&nbsp;project-b.md<br>└──&nbsp;archive/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;←&nbsp;长期归档<br>&nbsp;&nbsp;&nbsp;&nbsp;└──&nbsp;...</code></pre>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <code class="codespan"
+            style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">system/</code>
+      目录下的文件永远被完整加载进 system prompt，相当于 Agent 的随时可用工作记忆，类似大脑的前额叶缓存。其他目录的文件只暴露文件名和描述，内容需要
+      Agent 主动请求才加载。这个分层保证了 context window 的精简：Agent 的核心身份始终在线，但不会被几百个历史记忆文件撑爆。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Sleep-time subagent 的触发与执行。</strong>Letta
+      的 <code class="codespan"
+               style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/sleeptime</code>
+      配置支持三种触发模式：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">关闭</strong>：不做任何后台整理
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">步数触发</strong>：每 N 条用户消息启动一次反思
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Compaction 触发</strong>（推荐用于 MemFS）：当
+        context window 被压缩/总结时启动
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Compaction 触发的逻辑是：当 Agent 的上下文窗口即将溢出、系统执行
+      compaction（压缩早期对话为摘要）时，正是信息从工作记忆向长期记忆迁移的自然时机。这对应生物学中海马体缓冲区满了触发整合的机制。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      触发后发生什么：</p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. 系统在后台 fork 一个
+        subagent，给它独立的推理预算
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. Subagent 获得当前对话的上下文和已有
+        MemFS 内容
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. Subagent 执行多轮
+        read-think-write 循环，不是跑一步就完
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">4. 每次编辑 MemFS 文件后 git
+        commit，留下完整变更历史
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">5. 主 Agent 的下一次 session
+        自动看到更新后的记忆
+      </li>
+    </ol>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      文档强调 subagent &quot;generally run for many steps since subagents are thorough memory editors&quot;。一个
+      sleep-time 周期可能涉及：读取 5 个记忆文件、对比当前对话内容、决定更新 2 个文件的某些段落、新建 1 个文件记录新发现的偏好、删除
+      1 个过时的文件。这是一个小型推理任务，不是简单的追加一行。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Sleep-time 能做什么。</strong>具体的编辑操作包括：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 在 <code class="codespan"
+                                                                                                 style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">system/</code>
+        下新增一条持久规则（比如发现用户反复要求中文输出，写入 <code class="codespan"
+                                                                   style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">system/preferences.md</code>）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        更新已有文件的内容（旧信息过时了，合并新信息）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 删除过时的记忆文件（项目结束了，相关记忆移入
+        archive）
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        重组文件结构（把散落在多个文件中的同一主题信息合并到一处）
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Letta 还提供辅助命令辅助记忆维护：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <code class="codespan"
+                                                                                              style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/remember</code>：用户主动指示
+        Agent 记住某件事
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <code class="codespan"
+                                                                                              style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/init</code>：对
+        Agent 做初始化分析，从历史中建立初始记忆
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <code class="codespan"
+                                                                                              style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/doctor</code>：审计当前记忆布局，修剪冗余、优化
+        token 使用
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">与 Anthropic Dreaming 的根本差异</strong>：
+    </p>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          维度
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Anthropic Dreaming
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Letta Sleep-time
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">执行者
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">平台级服务（跨
+            agent）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Agent 自己的
+            subagent
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">触发时机
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Session
+            间隔（纯离线）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">连续（每 N
+            条消息 / compaction）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">输入范围
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">全部历史
+            session log
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">当前对话 +
+            已有 MemFS
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">作用范围
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">跨
+            agent、team-level
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">单个 agent
+            内部
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">输出形式
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Playbook /
+            notes
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">文件编辑 +
+            git commit
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">存储抽象
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">挂载文件系统
+            <code class="codespan"
+                  style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">/mnt/memory/</code>
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Git-backed
+            markdown（MemFS）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">控制方式
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">开发者审核
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Agent 自主决策
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">能否发现团队模式
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">能
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">不能
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">回滚机制
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Immutable
+            versioning
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">git revert
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Letta 的方案更自治，Agent 是自己记忆的主人。代价是双重的：每个 Agent 只能从自己的经历中学习，看不到别的 Agent 踩过的坑；同时
+      Agent 的记忆编辑质量取决于 subagent 本身的推理能力，如果 subagent 做了错误的归纳，没有外部审核机制来拦截。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      Mem0：实时增量整合（没有离线阶段）</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Mem0 选择了第三条路：干脆不做梦，把整合嵌入到实时推理流程中。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">为什么算第三种做梦。</strong>严格来说 Mem0
+      没有离线阶段。但它在做的事情，从交互中抽取事实、与已有记忆对比、决定保留/更新/删除，和 dreaming
+      的本质操作是一样的。区别只在于什么时候做：Anthropic 在 session 间隔做，Letta 在 N 条消息后做，Mem0 在每条消息时就做。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      它代表了整合频谱的另一个极端：完全连续、零延迟、但也零全局视野。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">双阶段管线（Algorithm 1）。</strong>每一对新消息
+      (m_{t-1}, m_t) 经过两步处理：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/mem0-pipeline.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/mem0-pipeline.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">第一步：抽取（Extraction）。</strong>系统构建一个综合提示
+      P，包含四个上下文源：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 10px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="P = (S, {m_{t-m}, ..., m_{t-2}}, m_{t-1}, m_t)
+
+其中：
+- S = Conversation Summary（异步更新的全局对话摘要）
+- {m_{t-m}, ..., m_{t-2}} = 最近 m=10 条历史消息
+- m_{t-1}, m_t = 当前消息对" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">P&nbsp;=&nbsp;(S,&nbsp;{m_{t-m},&nbsp;...,&nbsp;m_{t-2}},&nbsp;m_{t-1},&nbsp;m_t)<br><br>其中：<br>-&nbsp;S&nbsp;=&nbsp;Conversation&nbsp;Summary（异步更新的全局对话摘要）<br>-&nbsp;{m_{t-m},&nbsp;...,&nbsp;m_{t-2}}&nbsp;=&nbsp;最近&nbsp;m=10&nbsp;条历史消息<br>-&nbsp;m_{t-1},&nbsp;m_t&nbsp;=&nbsp;当前消息对</code></pre>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这个提示被喂给 LLM 抽取函数 φ，产出候选事实集合 Ω = {ω₁, ω₂, ..., ωₙ}。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      为什么需要 Conversation Summary？因为只看最近 10 条消息不够，用户可能在 50
+      条消息前提过一个重要偏好，如果不带全局摘要，抽取函数会忘记它。异步摘要生成模块独立于主管线运行，定期更新，不阻塞主流程。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">第二步：更新（Update）。</strong>对每个候选事实
+      ωᵢ：</p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. 向量相似度检索已有记忆中语义最近的
+        s=10 条
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. 将候选事实 + 10 条相似记忆一起提交给
+        LLM
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. LLM 通过 function calling
+        接口选择一个操作：
+      </li>
+    </ol>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          操作
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          触发条件
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          效果
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">ADD</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            没有语义等价的记忆存在
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">创建新记忆条目
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">UPDATE</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            有相似记忆，但新信息更丰富
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">用更完整的版本替换
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">DELETE</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            新信息和已有记忆直接矛盾
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">移除旧记忆
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">NOOP</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">信息已存在或无关紧要
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">不做任何修改
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      关键设计选择：Mem0 没有用独立的分类器来做操作判断，直接让 LLM 基于语义关系推理。论文的解释是：操作选择需要理解两条信息之间的语义关系是什么，这正是
+      LLM 擅长的事。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Mem0g：Graph 版的时间线保留。</strong>Mem0
+      的增强版 Mem0g 用知识图谱替代纯向量存储。图结构 G = (V, E, L)，其中节点 V 是实体（人、地点、概念），边 E 是关系（lives_in,
+      prefers, owns），标签 L 是语义类型。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Mem0g 的关键差异在于 DELETE 操作的实现：不物理删除节点或边，而是标记关系为 invalid。这保留了记忆演变的完整时间线：</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 10px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="(Alice) --[lives_in, active]--> (Shanghai)
+(Alice) --[lives_in, invalid, ended: 2025-03]--> (Beijing)" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">(Alice)&nbsp;--[lives_in,&nbsp;active]--&gt;&nbsp;(Shanghai)<br>(Alice)&nbsp;--[lives_in,&nbsp;invalid,&nbsp;ended:&nbsp;2025-03]--&gt;&nbsp;(Beijing)</code></pre>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      为什么要保留历史？因为某些场景需要回答以前是什么，法律审计、变更追溯、时间线推理。Mem0g 在 LOCOMO benchmark 的时间推理任务上得分
+      58.13%，比 Mem0 base 的 55.51% 高出近 3 个点，验证了这个设计选择的价值。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Mem0g 的双检索策略。</strong>查询时有两条路径可以走：
+    </p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Entity-centric 检索</strong>：从查询中识别关键实体
+        → 找到图中对应节点 → 遍历该节点的入边和出边 → 构建相关子图
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">Semantic triplet 检索</strong>：把整个查询编码为向量
+        → 与所有关系三元组的文本编码计算相似度 → 返回超过阈值的三元组
+      </li>
+    </ol>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      两条路径互补：entity-centric 擅长结构化推理（Alice 住哪里），semantic triplet 擅长模糊匹配（上次讨论过的那个城市）。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">性能数据</strong>（LOCOMO
+      benchmark，GPT-4o-mini 作为推理引擎）：</p>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          指标
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Mem0
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Mem0g
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          全上下文
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          最佳 RAG
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">综合 J 分
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">66.88%
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">68.44%
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">72.90%
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">60.97%
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">搜索延迟
+            p50
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">0.148s
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">0.476s
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">—
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">0.288s
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">总延迟 p95
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">1.440s
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">2.590s
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">17.117s
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">9.942s
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">记忆 token
+            消耗
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">7K
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">14K
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">26K
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">可变
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">时间推理 J
+            分
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">55.51%
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">58.13%
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">—
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">~50%
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Mem0 的搜索延迟是所有方案中最低的，p50 仅 0.148 秒。对比 LangMem 的 p50 17.99 秒（接近 18 秒），或者 Zep 的 0.513
+      秒。这个速度使得每条消息都做整合在延迟上完全可行。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Mem0 的本质局限。</strong>它的整合窗口是当前消息
+      + 最近 10 条 + 全局摘要。这意味着：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">能做</strong>：局部一致性维护，相邻对话之间的矛盾能被即时发现和解决
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">不能做</strong>：宏观模式发现，跨 50 个
+        session、横跨两周时间的行为趋势，不在视野内
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      一个具体的例子：假设 Agent 在过去两周内，每次处理 Excel 文件时都会在合并单元格步骤出错，但每次出错的具体表现略有不同。Mem0
+      会在每次出错时修正当次的事实记忆（这个文件的合并单元格有问题），但它不会发现你在合并单元格这个操作上有系统性问题。发现这种宏观
+      pattern 需要回顾所有历史 session，这正是 Dreaming 做的事。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Mem0 和 Dreaming 不是竞争关系，而是互补关系。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      三条路线的本质权衡</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/consolidation-spectrum.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/consolidation-spectrum.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      把三种方案放在一起看：</p>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);"></th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Anthropic Dreaming
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Letta Sleep-time
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          Mem0 实时整合
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">整合时机</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">离线（session
+            间隔）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">半在线（N
+            消息一次）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">实时（每条消息）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">整合范围</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">全局（跨
+            agent）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">单 agent
+            全历史
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">局部（最近
+            10 条）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">能发现什么</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">团队级宏观
+            pattern
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">个体级长期趋势
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">局部矛盾和更新
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">延迟</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">分钟级（离线完成）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">秒级（后台运行）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">毫秒级（实时内嵌）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">失败后果</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Pattern
+            有错→影响所有 agent
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">记忆编辑有误→单个
+            agent
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">判断错→影响当前事实
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;"><strong
+              style="color: #D97757; font-weight: bold; font-size: inherit;">回滚能力</strong></td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Immutable
+            versioning
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">Git
+            history
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">标记
+            invalid（Mem0g）
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      没有哪条路更好。选择取决于：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 需要跨 agent 协作？→ Anthropic
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• Agent 需要高度自治？→ Letta</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 场景对实时性要求极高？→ Mem0</li>
+    </ul>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      核心设计约束：做梦系统到底要解决什么</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/design-constraints.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/design-constraints.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      无论选哪条技术路线，任何做梦系统都绕不开四个设计问题。这些问题没有标准答案，每个系统做的都是权衡。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      什么值得记</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      记住一切是最懒的方案，也是最差的方案。Zep 的案例是一个具体的警示：它在每个图节点上缓存完整的抽象摘要，加上边上存储的事实，总
+      token 消耗达到 600K+。对比之下 Mem0 的同等语义覆盖只需要 7K tokens，差了接近两个数量级。更多记忆不等于更好的记忆。当记忆规模大到检索噪音淹没信号时，Agent
+      的表现反而退化。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      什么信息值得被 dreaming 提取？三个筛选标准按优先级排列：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">跨 session 复现频率。</strong>同一个错误出现三次以上，说明它不是偶发的，是系统性的。Harvey
+      的案例正是如此，忘记检查管辖区要求不是某一次的疏忽，是流程设计的缺陷。频率是最硬的信号，因为它不依赖 LLM 的判断力，统计就能做。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">纠错价值（被发现后能产生多大改善）。</strong>有些
+      pattern 被发现后能显著改善结果：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 文件格式转换在第三步容易失败，要加重试
+        → 直接消除一类故障
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 这个 API 的 rate limit 是 100
+        req/min，不是 1000 → 避免反复触发限流
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      有些则无关紧要：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 用户通常在周二下午提问 →
+        知道了也不会改善任何输出
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 对话平均 15 轮 →
+        纯统计信息，无决策价值
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      纠错价值的判断目前完全依赖 LLM 的推理能力，没有形式化的度量方式。这是 dreaming
+      系统最大的软肋，它依赖归纳推理，而归纳推理可能出错。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">跨任务可迁移性。</strong>如果一个 pattern
+      只适用于这篇文档的第三段，它的持久化价值极低，下次不会再遇到完全相同的文档。但如果它适用于所有包含合并单元格的 Excel
+      文件，就值得固化成规则。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      迁移性高的 pattern 比如：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 生成 DOCX
+        时，插入图片前要检查图片尺寸是否超过页面宽度
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        用户说帮我整理一下时，他期望的是按时间排序而不是按主题分类
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      迁移性低的 pattern：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 文件 report-Q3-2025.xlsx 的第 4
+        列有一个公式错误
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        上周三那次会议的记录里有个人名拼错了
+      </li>
+    </ul>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      什么时候忘</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      记忆无限膨胀的后果不是占用更多存储（存储很便宜），真正的代价是<strong
+        style="color: #D97757; font-weight: bold; font-size: inherit;">检索质量退化</strong>。当 Agent 的记忆库里有
+      10,000 条记忆时，每次检索 top-10 的相关性分布会变得很平坦：第 1 名和第 10 名的相似度分数差距缩小，LLM 更难从中挑选出真正相关的那条。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      三种遗忘的工程策略，对应不同的代谢模型：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">时间衰减（Decay）。</strong>每条记忆有一个活跃度分数，随时间自然下降。长期未被检索命中的记忆逐渐被降权。降到阈值以下就移入
+      archive 或删除。这是最简单的策略，但有明显缺陷：有些记忆频率低但重要性极高（比如绝对不能给这个客户发中文邮件，可能一年只触发一次，但触发时必须生效）。纯时间衰减会误杀这类低频高重要性记忆。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">矛盾覆盖（Contradiction-driven
+        deletion）。</strong>新事实和旧记忆矛盾时，旧的让位。这是 Mem0 的 DELETE 操作在做的事：LLM 判断新旧信息是否矛盾，如果矛盾则删除旧的（或在
+      Mem0g 中标记为 invalid）。优点：不需要人为设定衰减参数，由数据自身的一致性驱动。缺点：依赖 LLM
+      正确判断什么构成矛盾，有时候两条看似矛盾的记忆是不同时间点的正确描述（Q1 预算 50 万和 Q2 预算 80 万不矛盾，是时间维度不同）。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">信息量对比（Information density
+        replacement）。</strong>Mem0 的 UPDATE 逻辑：如果新事实的信息量（InformationContent）大于已有记忆，用新的替换旧的。</p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 10px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="旧记忆：&quot;他喜欢咖啡&quot;
+新事实：&quot;他喜欢手冲咖啡，偏好浅烘豆，最近在试肯尼亚产区&quot;
+判断：新 > 旧（信息更丰富），执行 UPDATE" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">旧记忆：&quot;他喜欢咖啡&quot;<br>新事实：&quot;他喜欢手冲咖啡，偏好浅烘豆，最近在试肯尼亚产区&quot;<br>判断：新&nbsp;&gt;&nbsp;旧（信息更丰富），执行&nbsp;UPDATE</code></pre>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这个策略的前提假设是：更详细 = 更好。大多数场景下成立，但有例外，有时候旧的简洁版本更适合快速检索（他喜欢咖啡作为一个
+      tag 可能比详细版更适合粗筛）。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">生物学中的对应物：突触缩放不是删除。</strong>大脑在睡眠中做的不是把某些突触删掉，而是全局降低所有突触强度，但被重播激活的连接被选择性恢复。效果是信噪比提高，不重要的自然变淡，重要的被维持。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Agent 的理想遗忘策略可能也是类似的：不是主动删除某些记忆，而是在每次检索时对所有记忆做 relevance-weighted
+      ranking，让不相关的自然排到后面、永远不被调用。这种被动遗忘比主动删除更安全，不会误杀低频高价值记忆。</p>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      一致性怎么维护</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Agent 周一学到客户 A 的预算是 50 万，周三又学到客户 A 的预算是 80 万。如果两条记忆同时存在且都标记为 active，Agent
+      下次被问客户 A 的预算是多少时会给出不确定的答案，甚至幻觉一个折中值。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      一致性维护的三种工程路线：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">实时冲突解决（Mem0）。</strong>每次新事实进入时，立即和已有记忆对比。如果发现矛盾，当场处理：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 简单矛盾（新值替换旧值）→ DELETE 旧
+        + ADD 新
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 补充关系（新旧互不矛盾，只是更详细）→
+        UPDATE 合并
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 无关（新旧不在同一语义空间）→
+        NOOP
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      好处：矛盾不会积累，记忆库在任何时刻都是尽可能一致的。坏处：实时判断依赖单次 LLM
+      调用的准确性。如果那一次判断错了（把补充误判为矛盾），正确的旧记忆可能被误删，且没有回头的余地（除非用 Mem0g 的 invalid
+      标记）。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">时间线保留（Mem0g / Zep Graphiti）。</strong>不做二选一，而是把所有版本都保留，用时间戳标注状态：
+    </p>
+    <pre class="hljs code__pre"
+         style="color: #24292e; background: #fff; font-size: 90%; overflow-x: auto; border-radius: 10px; line-height: 1.5; margin: 10px 8px; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); padding: 0 !important;"><span
+        class="mac-sign" style="display: flex; padding: 10px 14px 0;"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                           version="1.1" x="0px" y="0px" width="45px"
+                                                                           height="13px" viewBox="0 0 450 130">
+    <ellipse cx="50" cy="65" rx="50" ry="52" stroke="rgb(220,60,54)" stroke-width="2" fill="rgb(237,108,96)"/>
+    <ellipse cx="225" cy="65" rx="50" ry="52" stroke="rgb(218,151,33)" stroke-width="2" fill="rgb(247,193,81)"/>
+    <ellipse cx="400" cy="65" rx="50" ry="52" stroke="rgb(27,161,37)" stroke-width="2" fill="rgb(100,200,86)"/>
+  </svg></span><code class="language-" data-language-pending data-raw-code="(客户A) --[budget=50万, valid_from: 2026-03-01, valid_until: 2026-03-15]--> (预算)
+(客户A) --[budget=80万, valid_from: 2026-03-15, active]--> (预算)" data-show-line-number="false"
+                     style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">(客户A)&nbsp;--[budget=50万,&nbsp;valid_from:&nbsp;2026-03-01,&nbsp;valid_until:&nbsp;2026-03-15]--&gt;&nbsp;(预算)<br>(客户A)&nbsp;--[budget=80万,&nbsp;valid_from:&nbsp;2026-03-15,&nbsp;active]--&gt;&nbsp;(预算)</code></pre>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      查询时根据当前时间返回 active 版本。需要历史追溯时可以拿到完整时间线。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Zep 的 Graphiti 引擎就是这个思路，temporal knowledge graph with timestamped node and edge updates。它在 LongMemEval
+      上的时间推理分数（~63.8%）比 Mem0 的 49.0% 高出近 15 个点，说明时间线保留对于上周 vs
+      这周类问题确实有显著优势。代价：存储膨胀。每次更新不是替换，是追加。长期运行的 Agent 的图可能变得很大。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">版本化回滚（Anthropic Memory Tool）。</strong>每次写入都产生一个不可变版本。不关心哪个对，所有版本共存，开发者或系统在需要时做回滚。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这是最安全的策略：永远不丢数据，永远可以恢复到任何历史状态。但它不自动解决一致性，需要额外的逻辑来决定当前版本用哪个。Dreaming
+      的角色之一就是做这个清理：回顾历史版本，判断哪些已过时，产出一个当前最佳的 playbook。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">三种策略适用的场景</strong>：</p>
+    <section
+        style="text-align: left; font-family: -apple-system-font,BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB , Microsoft YaHei UI , Microsoft YaHei ,Arial,sans-serif; font-size: 15px; line-height: 2; letter-spacing: 0px; font-weight: 400; background-color: rgba(250, 249, 245, 1); border: 1px solid rgba(255, 255, 255, 0.01); border-radius: 25px; padding: 12px 12px; max-width: 100%; overflow: auto;">
+      <table class="preview-table" style="color: #3f3f3f; margin-top: 0 !important;">
+        <thead style="font-weight: bold; color: #3f3f3f;">
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          策略
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          最佳场景
+        </th>
+        <th class="th"
+            style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all; background: color-mix(in srgb, #D97757 10%, transparent);">
+          不适合的场景
+        </th>
+        </thead>
+        <tbody>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">实时冲突解决
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            高频更新、时效性强（客服对话）
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            需要审计追溯（金融、法律）
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">时间线保留
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            审计合规、时间推理密集
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">
+            存储成本敏感、记忆量极大
+          </td>
+        </tr>
+        <tr class="tr">
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">版本化回滚
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">高安全要求、多方协作
+          </td>
+          <td class="td"
+              style="border: 1px solid #dfdfdf; padding: 0.25em 0.5em; color: #3f3f3f; word-break: keep-all;">低延迟要求、简单场景
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      谁来做整合</h3>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      这是最深层的设计分歧，它决定了系统的信任模型。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Agent 自己做</strong>（Letta subagent 模式）。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      哲学立场：Agent 是自己记忆的唯一主人。没有外部系统有权修改 Agent 的记忆，所有记忆变更都由 Agent 自己的推理链驱动。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      工程后果：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 去中心化，无单点故障，Agent
+        可以完全离线运行
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 每个 Agent 的记忆是私有的，不存在跨
+        Agent 的信息泄漏
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 但也意味着：两个 Agent
+        踩了同一个坑，各踩一次
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 记忆质量完全取决于 subagent
+        的推理能力，没有外部审核
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">平台做</strong>（Anthropic Dreaming）。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      哲学立场：记忆整合是一个基础设施层服务，类似垃圾回收，Agent 不需要自己操心。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      工程后果：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 能跨 Agent 发现 team-level
+        pattern：这个团队的所有 agent 在处理 PDF 时都会漏掉页码检查
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 集中化意味着更高的信任要求，Agent
+        A 的经验被平台消化后，可能影响 Agent B 的行为
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 开发者可以审核，但面对大量
+        pattern 时审核带宽可能不够
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 平台承担了什么值得记的判断责任
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">实时嵌入式做</strong>（Mem0）。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      哲学立场：整合不应该是一个独立阶段，它应该融入推理的每一步。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      工程后果：</p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 零额外延迟，没有单独的整合时间
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 整合质量受限于单次 LLM
+        调用的上下文：只看得到当前 + 最近 10 条
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">•
+        如果模型在某一次调用中做了错误判断，这个错误会立即被写入持久记忆
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 没有反刍机会，不像 dreaming
+        可以在离线时从更宽的视角重新审视
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">组合使用。</strong>这三种策略并不互斥。一个成熟的生产系统可能长这样：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">实时层（Mem0）</strong>：每次交互都做增量整合，维护局部一致性
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">定期层（Letta sleep-time）</strong>：每 50
+        条消息做一次中等粒度的记忆重组
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">全局层（Anthropic Dreaming）</strong>：每天 /
+        每周做一次跨 session 的宏观 pattern 提取
+      </li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      三层像生物学中的三种时间尺度：毫秒级突触可塑性、分钟级海马体编码、小时级睡眠整合。各管各的时间窗口，互不干扰。</p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      经济学：什么时候做梦比全塞上下文划算</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <img src="imgs/economics-crossover.png"
+           data-local-path="/Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/agent-memory-dreaming/imgs/economics-crossover.png"
+           style="display: block; width: 100%; margin: 1.5em auto;"></p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      2026 年中的一个现实是：长上下文模型的定价已经低到让很多人质疑为什么还需要记忆系统。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">短期任务的经济计算。</strong>Claude Opus 4.7
+      提供 1M token 上下文，flat pricing $5/Mtok input。如果一个 agent 累计历史不超过 500K tokens，session 不超过 10
+      个，直接把所有历史塞进上下文可能比维护一套记忆基础设施更便宜。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">但这只在小规模成立。</strong>一旦跨过临界点：
+    </p>
+    <ul class="ul" style="list-style: circle; padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• 累计历史 &gt; 10M tokens</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• Session 数量 &gt; 100</li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">• Agent 存活时间 &gt; 数周</li>
+    </ul>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      全塞上下文在延迟和成本上都不可行。Mem0 论文的数据说得很清楚：全上下文方案的 p95 延迟是 17.1 秒，Mem0 是 1.4
+      秒，差了一个数量级。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Dreaming 的 ROI 公式。</strong>它的价值取决于两个变量：
+    </p>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">任务重复性</strong>：相似任务越多，一个 pattern 的
+        leverage 越大。Harvey 的法律场景是极端高重复性的例子。
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. <strong
+          style="color: #D97757; font-weight: bold; font-size: inherit;">跨 session 可迁移性</strong>：如果每个 session
+        都是全新任务（没有历史经验可复用），dreaming 就没什么用。
+      </li>
+    </ol>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      粗略地说：dreaming 是给<strong style="color: #D97757; font-weight: bold; font-size: inherit;">长期运行的生产
+      Agent</strong> 设计的。如果你的 agent 跑一次就扔了，不需要这套机制。</p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      当前局限和未解问题</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Dreaming 还在 research preview 阶段。以下问题目前没有公开的解决方案：</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Pattern 质量没有验证机制。</strong>Dreaming
+      本质上是一个 LLM 推理过程，它从 session 历史中归纳出 pattern。归纳可能有错。如果 dreaming 从十次巧合中提炼出一条规律，这条规律就会持续误导
+      Agent。目前 Anthropic 提供手动审核选项，但没有自动化的 pattern 质量评估。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">Team-level pattern 的隐私边界。</strong>Dreaming
+      可以跨 agent 提取模式，一个用户和 agent 交互时产生的经验可能被提取成 pattern 并影响另一个用户的 agent
+      行为。数据隔离的边界在哪里？目前没有公开的架构说明。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">记忆中毒风险。</strong>OWASP LLM Top 10 中
+      LLM04（Data Poisoning）和 LLM08（Vector/Embedding Weaknesses）直接适用。如果一个 session 中的 prompt injection 被 Agent
+      当作正常经历记录在 event log 里，dreaming 可能在离线阶段将其提炼成长期 pattern。这等于把一次性的攻击固化成了持久后门。
+    </p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">评估基准缺失。</strong>Harvey 的 6x
+      是唯一公开的效果数据，来自单一领域（法律）、单一厂商、厂商自报。学术界还没有标准化的 benchmark 来评估 dreaming
+      前后的差异。2025 年的 survey 也指出：现有 benchmark（LOCOMO、LongMemEval）测的是记忆检索质量，不是记忆进化质量。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      <strong style="color: #D97757; font-weight: bold; font-size: inherit;">天花板在哪？</strong>Dreaming 只操作
+      token-level 记忆，它写的是文本规则，不改模型权重。这意味着它能积累的经验受限于 prompt 能装下的规则数量。当规则积累到上千条，Agent
+      的 system prompt 会被 memory 挤占，推理空间反而压缩。parametric memory update（改权重）是更根本的方案，但目前还没有生产级实现。
+    </p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      Agent 的下一步不是更聪明，是能积累</h2>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      当前 Agent 的真正瓶颈不在智力，模型已经足够聪明了。瓶颈在于<strong
+        style="color: #D97757; font-weight: bold; font-size: inherit;">无法从经验中学习</strong>。每次 session
+      都是从零开始，过去踩过的坑不会减少未来踩坑的概率。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      Dreaming 是第一个生产级别的、不靠重训就能让 Agent 越用越好的机制。它的生物学原型已经在数亿年的进化中被验证过：快速编码
+      + 离线整合 + 选择性遗忘，这套组合让人类能在有限的神经资源下持续学习而不崩溃。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      它还不完美。Pattern 可能有误，规模受限于 prompt 空间，不能跨领域泛化，安全边界尚未明确。但方向是清楚的：<strong
+        style="color: #D97757; font-weight: bold; font-size: inherit;">Agent
+      的价值不只来自单次推理的质量，还来自时间的积累</strong>。</p>
+    <p class="p"
+       style="margin: 20px 0; letter-spacing: 0.1em; color: #3f3f3f; line-height: 2; letter-spacing: 0px; font-size: 15px; font-weight: 400; word-break: break-all;">
+      一个跑了一年的 agent，应该比刚创建的 agent 更了解它的工作环境、更少犯重复错误、更擅长它负责的任务。Dreaming
+      是通向这个目标的第一步基础设施。</p>
+    <hr class="hr" style="border-style: solid; border-width: 1px 0 0; border-color: #E4B1A0; margin: 1.5em 0;">
+    <h2 class="h2" data-heading="true"
+        style="display: block; padding: 0.2em 0; padding-bottom: 0; margin: 0 auto 20px; width: 100%; color: #D97757; font-size: 20px; font-weight: bold; letter-spacing: 0.578px; line-height: 1.7; border-bottom: 2px solid #E4B1A0; text-align: left;">
+      参考来源</h2>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      产品与工程博客</h3>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">1. Anthropic, &quot;New in Claude
+        Managed Agents: dreaming, outcomes, and multiagent orchestration,&quot; claude.com/blog, May 6, 2026.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">2. Anthropic, &quot;Scaling
+        Managed Agents: Decoupling the brain from the hands,&quot; anthropic.com/engineering/managed-agents, April 8,
+        2026.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">3. Letta, &quot;Memory — Letta
+        Code Documentation,&quot; docs.letta.com/letta-code/memory, May 2026.
+      </li>
+    </ol>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      论文</h3>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">4. Chhikara et al., &quot;Mem0:
+        Building Production-Ready AI Agents with Scalable Long-Term Memory,&quot; arXiv:2504.19413, April 2025.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">5. Packer et al., &quot;MemGPT:
+        Towards LLMs as Operating Systems,&quot; arXiv:2310.08560, October 2023. (ICLR 2024)
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">6. Liu et al., &quot;Memory in the
+        Age of AI Agents: A Survey,&quot; arXiv:2512.13564, December 2025.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">7. Klinzing et al., &quot;Mechanisms
+        of systems memory consolidation during sleep,&quot; Nature Neuroscience 22, 1598–1610, 2019.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">8. Liu &amp; Ranganath, &quot;A
+        complementary learning systems model of how sleep consolidates memory,&quot; Psychonomic Bulletin &amp; Review,
+        March 2024.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">9. McClelland, McNaughton &amp; O&#39;Reilly,
+        &quot;Why there are complementary learning systems in the hippocampus and neocortex,&quot; Psychological Review
+        102(3), 419–457, 1995.
+      </li>
+    </ol>
+    <h3 class="h3" data-heading="true"
+        style="padding-left: 10px; border-left: 4px solid #D97757; border-radius: 2px; margin: 0 8px 10px; color: #3f3f3f; font-size: 20px; font-weight: bold; line-height: 1.2;">
+      补充参考</h3>
+    <ol class="ol" style="padding-left: 1em; margin-left: 0; color: #3f3f3f; line-height: 2;">
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">10. McNamara et al., &quot;Dopaminergic
+        neurons promote hippocampal reactivation and spatial memory persistence,&quot; Nature Neuroscience 17,
+        1658–1660, 2014.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">11. Latchoumane et al., &quot;Thalamic
+        spindles promote memory formation during sleep through triple phase-locking of cortical, thalamic, and
+        hippocampal rhythms,&quot; Neuron 95(2), 424–435, 2017.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">12. de Vivo et al., &quot;Ultrastructural
+        evidence for synaptic scaling across the wake/sleep cycle,&quot; Science 355(6324), 507–510, 2017.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">13. Yang et al., &quot;Sleep
+        promotes branch-specific formation of dendritic spines after learning,&quot; Science 344(6188), 1173–1178, 2014.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">14. Digital Applied, &quot;AI
+        Agent Memory 2026: Vector, Graph, Episodic Update,&quot; digitalapplied.com/blog, May 24, 2026.
+      </li>
+      <li class="listitem" style="display: block; margin: 0.2em 8px; color: #3f3f3f;">15. OWASP, &quot;Top 10 for LLM
+        Applications 2025,&quot; owasp.org/www-project-top-10-for-large-language-model-applications.
+      </li>
+    </ol>
+
+
+  </section>
+</div>
+</body>
+</html>

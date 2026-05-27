@@ -1,0 +1,176 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -30 840 580" width="840" height="580"
+        style="font-family:'JetBrains Mono',monospace">
+    <defs>
+        <!-- Grid pattern -->
+        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#1e293b" stroke-width="1"/>
+        </pattern>
+        <!-- Arrow markers for connections -->
+        <marker id="arr-dash" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="#64748b"/>
+        </marker>
+        <marker id="arr-dash-thin" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 z" fill="#475569"/>
+        </marker>
+        <marker id="arr-gray-down" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L7,3.5 z" fill="#475569"/>
+        </marker>
+    </defs>
+
+    <!-- Background -->
+    <rect x="-30" y="-30" width="840" height="580" fill="#0f172a"/>
+    <!-- Grid -->
+    <rect x="-30" y="-30" width="840" height="580" fill="url(#grid)"/>
+
+    <!-- Title -->
+    <text x="390" y="-8" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="14" font-weight="bold"
+            fill="#f1f5f9">CoALA 认知架构 → 四层工程映射
+    </text>
+
+    <!-- ═══════════════════════════════════════
+         LEFT COLUMN: CoALA Components (x=30)
+         ═══════════════════════════════════════ -->
+
+    <!-- 1. 记忆 Memory (cyan) — y=20, h≈120 -->
+    <rect x="30" y="20" width="240" height="130" rx="8" fill="#0c2a2e" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="150" y="42" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="bold"
+            fill="#ffffff">记忆 Memory
+    </text>
+    <line x1="50" y1="52" x2="250" y2="52" stroke="#22d3ee" stroke-width="0.6" stroke-opacity="0.4"/>
+    <text x="50" y="69" font-family="'JetBrains Mono',monospace" font-size="9" fill="#22d3ee">工作记忆</text>
+    <text x="50" y="83" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">上下文窗口</text>
+    <text x="50" y="101" font-family="'JetBrains Mono',monospace" font-size="9" fill="#22d3ee">长期记忆</text>
+    <text x="50" y="115" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">程序性 · 语义性 ·
+        情节性
+    </text>
+    <text x="50" y="139" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8" opacity="0">　</text>
+
+    <!-- 2. 动作空间 Action Space (emerald) — y=185, h≈120 -->
+    <rect x="30" y="185" width="240" height="130" rx="8" fill="#0b231e" stroke="#34d399" stroke-width="1.5"/>
+    <text x="150" y="207" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12"
+            font-weight="bold" fill="#ffffff">动作空间 Action Space
+    </text>
+    <line x1="50" y1="217" x2="250" y2="217" stroke="#34d399" stroke-width="0.6" stroke-opacity="0.4"/>
+    <text x="50" y="234" font-family="'JetBrains Mono',monospace" font-size="9" fill="#34d399">内部动作</text>
+    <text x="50" y="248" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">推理 / 检索 / 记忆写入
+    </text>
+    <text x="50" y="266" font-family="'JetBrains Mono',monospace" font-size="9" fill="#34d399">外部动作</text>
+    <text x="50" y="280" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">工具调用 / 环境交互
+    </text>
+
+    <!-- 3. 决策过程 Decision (violet) — y=350, h≈110 -->
+    <rect x="30" y="350" width="240" height="110" rx="8" fill="#1a1240" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="150" y="372" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12"
+            font-weight="bold" fill="#ffffff">决策过程 Decision
+    </text>
+    <line x1="50" y1="382" x2="250" y2="382" stroke="#a78bfa" stroke-width="0.6" stroke-opacity="0.4"/>
+    <text x="50" y="399" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">从动作空间中选择下一步
+    </text>
+    <text x="50" y="417" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">规划 · 推理链 ·
+        搜索算法
+    </text>
+
+    <!-- ═══════════════════════════════════════
+         RIGHT COLUMN: Four Layers (x=490)
+         ═══════════════════════════════════════ -->
+
+    <!-- Down arrows between right layers -->
+    <!-- 感知→决策：感知底 y=110，决策顶 y=155 -->
+    <line x1="630" y1="110" x2="630" y2="153" stroke="#475569" stroke-width="1.5" marker-end="url(#arr-gray-down)"/>
+    <!-- 决策→行动：决策底 y=245，行动顶 y=290 -->
+    <line x1="630" y1="245" x2="630" y2="288" stroke="#475569" stroke-width="1.5" marker-end="url(#arr-gray-down)"/>
+    <!-- 行动→反馈：行动底 y=380，反馈顶 y=425 -->
+    <line x1="630" y1="380" x2="630" y2="423" stroke="#475569" stroke-width="1.5" marker-end="url(#arr-gray-down)"/>
+
+    <!-- 1. 感知层 (cyan) — y=20, h=90 -->
+    <rect x="490" y="20" width="280" height="90" rx="8" fill="#0c2a2e" stroke="#22d3ee" stroke-width="1.5"/>
+    <text x="630" y="42" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12" font-weight="bold"
+            fill="#ffffff">感知层
+    </text>
+    <text x="630" y="57" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#22d3ee">
+        模型能看见什么
+    </text>
+    <text x="630" y="72" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">观察格式
+        · 记忆检索 · 上下文管理 · ACI设计
+    </text>
+
+    <!-- 2. 决策层 (emerald) — y=155, h=90 -->
+    <rect x="490" y="155" width="280" height="90" rx="8" fill="#0b231e" stroke="#34d399" stroke-width="1.5"/>
+    <text x="630" y="177" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12"
+            font-weight="bold" fill="#ffffff">决策层
+    </text>
+    <text x="630" y="192" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#34d399">
+        下一步做什么
+    </text>
+    <text x="630" y="207" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">推理链
+        · 规划策略 · ReAct · Reflexion · LATS
+    </text>
+
+    <!-- 3. 行动层 (violet) — y=290, h=90 -->
+    <rect x="490" y="290" width="280" height="90" rx="8" fill="#1a1240" stroke="#a78bfa" stroke-width="1.5"/>
+    <text x="630" y="312" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12"
+            font-weight="bold" fill="#ffffff">行动层
+    </text>
+    <text x="630" y="327" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#a78bfa">
+        对环境做什么
+    </text>
+    <text x="630" y="342" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">
+        工具定义 · 执行沙箱 · 权限控制 · Handoff
+    </text>
+
+    <!-- 4. 反馈层 (amber) — y=425, h=90 -->
+    <rect x="490" y="425" width="280" height="90" rx="8" fill="#231c07" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="630" y="447" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="12"
+            font-weight="bold" fill="#ffffff">反馈层
+    </text>
+    <text x="630" y="462" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#fbbf24">
+        做对了没
+    </text>
+    <text x="630" y="477" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#94a3b8">
+        结果验证 · 反思机制 · 错误恢复 · AgentDebug
+    </text>
+
+    <!-- ═══════════════════════════════════════
+         DASHED ARROWS: Left → Right，L 形折线，不交叉
+         记忆右边(270) → 感知层左边(490)，同高 y=65
+         记忆右边(270) → 反馈层左边(490)，沿 x=460 向下
+         动作空间右边(270) → 行动层左边(490)，同高 y=335
+         决策过程右边(270) → 决策层左边(490)，沿 x=440 向上
+         ═══════════════════════════════════════ -->
+
+    <!-- 记忆 → 感知层 (cyan，水平直线) -->
+    <path d="M 270,65 L 490,65" fill="none" stroke="#22d3ee" stroke-width="1.8" stroke-dasharray="5,3"
+            marker-end="url(#arr-dash)"/>
+    <rect x="350" y="53" width="60" height="16" rx="3" fill="#0f172a"/>
+    <text x="380" y="65" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#22d3ee"
+            dy="4">→ 感知
+    </text>
+
+    <!-- 记忆 → 反馈层 (amber，L形：向右到 x=460，再向下到 y=470，再向右到 490) -->
+    <path d="M 270,130 L 460,130 L 460,470 L 490,470" fill="none" stroke="#fbbf24" stroke-width="1"
+            stroke-dasharray="4,4" marker-end="url(#arr-dash-thin)"/>
+
+    <!-- 动作空间 → 行动层 (violet，L形：向右到 x=450，再向下到 y=335，再向右到 490) -->
+    <path d="M 270,250 L 450,250 L 450,335 L 490,335" fill="none" stroke="#a78bfa" stroke-width="1.8"
+            stroke-dasharray="5,3" marker-end="url(#arr-dash)"/>
+    <rect x="330" y="238" width="68" height="16" rx="3" fill="#0f172a"/>
+    <text x="364" y="250" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#a78bfa"
+            dy="4">→ 行动
+    </text>
+
+    <!-- 决策过程 → 决策层 (emerald，L形：向右到 x=440，再向上到 y=200，再向右到 490) -->
+    <path d="M 270,405 L 440,405 L 440,200 L 490,200" fill="none" stroke="#34d399" stroke-width="1.8"
+            stroke-dasharray="5,3" marker-end="url(#arr-dash)"/>
+    <rect x="320" y="388" width="68" height="16" rx="3" fill="#0f172a"/>
+    <text x="354" y="400" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="9" fill="#34d399"
+            dy="4">→ 决策
+    </text>
+
+    <!-- Column labels -->
+    <text x="150" y="495" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#475569">
+        CoALA 认知架构
+    </text>
+    <text x="630" y="495" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="10" fill="#475569">
+        四层工程架构
+    </text>
+</svg>

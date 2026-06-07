@@ -82,7 +82,8 @@
       "Skill(deep-research)",
       "WebFetch(domain:claude.com)",
       "Bash(awk '/^### / {print NR\": \"$0}' /Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/skill-as-trainable-params/index.md)",
-      "Bash(gh search *)"
+      "Bash(gh search *)",
+      "WebFetch(domain:www.microsoft.com)"
     ]
   }
 }

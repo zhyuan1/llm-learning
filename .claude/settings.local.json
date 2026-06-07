@@ -68,7 +68,21 @@
       "Bash(curl -sL \"https://r.jina.ai/https://arxiv.org/abs/2406.14550\")",
       "Bash(curl -sL \"https://r.jina.ai/https://lilianweng.github.io/posts/2023-06-23-agent/\")",
       "WebFetch(domain:lilianweng.github.io)",
-      "Bash(curl -sL \"https://r.jina.ai/https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents\")"
+      "Bash(curl -sL \"https://r.jina.ai/https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents\")",
+      "WebFetch(domain:www.preprints.org)",
+      "WebFetch(domain:langchain-ai.github.io)",
+      "WebFetch(domain:ide.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:www.linkedin.com)",
+      "WebFetch(domain:vibecodingconsultant.com)",
+      "WebFetch(domain:zylos.ai)",
+      "WebFetch(domain:ai-academy.training)",
+      "WebFetch(domain:www.sciencedirect.com)",
+      "WebFetch(domain:activewizards.com)",
+      "Skill(deep-research)",
+      "WebFetch(domain:claude.com)",
+      "Bash(awk '/^### / {print NR\": \"$0}' /Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/skill-as-trainable-params/index.md)",
+      "Bash(gh search *)"
     ]
   }
 }

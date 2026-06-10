@@ -83,7 +83,15 @@
       "WebFetch(domain:claude.com)",
       "Bash(awk '/^### / {print NR\": \"$0}' /Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/skill-as-trainable-params/index.md)",
       "Bash(gh search *)",
-      "WebFetch(domain:www.microsoft.com)"
+      "WebFetch(domain:www.microsoft.com)",
+      "WebFetch(domain:www.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "Bash(awk 'BEGIN{count=0} {count+=gsub\\(/[一-龥]/,\"&\"\\)} END{print \"中文字符数：\" count}' /Users/haiyuanzhou/Documents/claudeCodingGit/llm-learning/skill-as-trainable-params/index.md)",
+      "Bash(command -v bun)",
+      "Bash(command -v npx)",
+      "Bash(mmdc --version)",
+      "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc --version)",
+      "Bash(pip3 install *)"
     ]
   }
 }

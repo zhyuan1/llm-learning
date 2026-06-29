@@ -91,7 +91,23 @@
       "Bash(command -v npx)",
       "Bash(mmdc --version)",
       "Bash(npx --yes -p @mermaid-js/mermaid-cli mmdc --version)",
-      "Bash(pip3 install *)"
+      "Bash(pip3 install *)",
+      "Workflow(deep-research)",
+      "WebFetch(domain:arxivlens.com)",
+      "WebFetch(domain:www.themoonlight.io)",
+      "WebFetch(domain:blog.iclr.cc)",
+      "WebFetch(domain:openreview.net)",
+      "WebFetch(domain:ecas.cas.cn)",
+      "WebFetch(domain:www.huggingface.co)",
+      "WebFetch(domain:www.stdaily.com)",
+      "WebFetch(domain:news.qq.com)",
+      "WebFetch(domain:www.neican.ai)",
+      "WebFetch(domain:mila.quebec)",
+      "WebFetch(domain:ar5iv.labs.arxiv.org)",
+      "WebFetch(domain:eu.36kr.com)",
+      "WebFetch(domain:www.wispaper.ai)",
+      "WebFetch(domain:www.alibabacloud.com)",
+      "WebFetch(domain:moanju.org)"
     ]
   }
 }

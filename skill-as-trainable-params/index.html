@@ -52,27 +52,6 @@
           style="color: #0F4C81; font-weight: bold; font-size: inherit;">链接资源</strong>，SKILL.md 引用的脚本、文档、数据，按需读取。
       </li>
     </ul>
-    <pre class="mermaid">flowchart TB
-    subgraph L1[&quot;Layer 1 · metadata&quot;]
-        direction LR
-        M[&quot;name + description&lt;br/&gt;&lt;i&gt;会话开始全量加载&lt;/i&gt;&lt;br/&gt;&lt;i&gt;1000 条 ≈ 几万 token&lt;/i&gt;&quot;]
-    end
-    subgraph L2[&quot;Layer 2 · SKILL.md 主体&quot;]
-        direction LR
-        B[&quot;frontmatter · 步骤 · 字段映射 · 常见失败&lt;br/&gt;&lt;i&gt;Claude 判断匹配 description 时加载&lt;/i&gt;&quot;]
-    end
-    subgraph L3[&quot;Layer 3 · 链接资源&quot;]
-        direction LR
-        R[&quot;scripts/ · references/ · data/&lt;br/&gt;&lt;i&gt;SKILL.md 步骤明确需要时才读取&lt;/i&gt;&quot;]
-    end
-    L1 -.按需触发.-&gt; L2
-    L2 -.按需触发.-&gt; L3
-    classDef l1 fill:#0e7490,stroke:#22d3ee,color:#f0f9ff
-    classDef l2 fill:#065f46,stroke:#34d399,color:#ecfdf5
-    classDef l3 fill:#5b21b6,stroke:#a78bfa,color:#f5f3ff
-    class M l1
-    class B l2
-    class R l3</pre>
     <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;">description 是召回信号，太抽象（&quot;处理财务文件&quot;）召不上，太窄（&quot;2024
       年北京增值税专票&quot;）覆盖不全。SKILL.md 主体里有两处后面会反复用到的设计，一是指令必须可执行（&quot;校验金额能转
       Decimal&quot;，不要&quot;合理校验&quot;），二是显式列出已知失败路径（写成&quot;当 X 发生时做 Y 不要 Z&quot;）。这两条第二节会用
@@ -191,24 +170,6 @@
                      data-raw-code="rollout → reflect → aggregate → select → update → evaluate"
                      data-show-line-number="false"
                      style="font-size: 90%; border-radius: 4px; display: -webkit-box; padding: 0.5em 1em 1em; overflow-x: auto; text-indent: 0; color: inherit; background: none; white-space: nowrap; margin: 0;">rollout&nbsp;→&nbsp;reflect&nbsp;→&nbsp;aggregate&nbsp;→&nbsp;select&nbsp;→&nbsp;update&nbsp;→&nbsp;evaluate</code></pre>
-    <pre class="mermaid">flowchart TB
-    R1[&quot;1. rollout&lt;br/&gt;&lt;i&gt;target agent 跑任务&lt;/i&gt;&quot;]
-    R2[&quot;2. reflect&lt;br/&gt;&lt;i&gt;optimizer 分析失败轨迹&lt;/i&gt;&quot;]
-    R3[&quot;3. aggregate&lt;br/&gt;&lt;i&gt;汇总候选改动方向&lt;/i&gt;&quot;]
-    R4[&quot;4. select&lt;br/&gt;&lt;i&gt;挑最有希望的候选&lt;/i&gt;&quot;]
-    R5[&quot;5. update&lt;br/&gt;&lt;i&gt;改写 SKILL.md&lt;/i&gt;&quot;]
-    R6{&quot;6. evaluate&lt;br/&gt;held-out 验证集打分&lt;br/&gt;&lt;b&gt;新分 &gt; 旧分？&lt;/b&gt;&quot;}
-    BUF[(&quot;rejected-edit buffer&lt;br/&gt;&lt;i&gt;下一轮提醒 optimizer 别再提&lt;/i&gt;&quot;)]
-    R1 --&gt; R2 --&gt; R3 --&gt; R4 --&gt; R5 --&gt; R6
-    R6 -- &quot;keep · 进入下一轮&quot; --&gt; R1
-    R6 -- &quot;revert&quot; --&gt; BUF
-    BUF -. 喂回 .-&gt; R5
-    classDef step fill:#0e7490,stroke:#22d3ee,color:#f0f9ff
-    classDef gate fill:#92400e,stroke:#fbbf24,color:#fef3c7
-    classDef buffer fill:#881337,stroke:#fb7185,color:#ffe4e6
-    class R1,R2,R3,R4,R5 step
-    class R6 gate
-    class BUF buffer</pre>
     <p class="p" style="margin: 1.5em 8px; letter-spacing: 0.1em; color: #3f3f3f;"><code class="codespan"
                                                                                          style="font-size: 90%; color: #d14; background: rgba(27, 31, 35, 0.05); padding: 3px 5px; border-radius: 4px;">target</code>
       agent 跑一批任务（rollout），得到带分数的轨迹。一个独立的 <code class="codespan"

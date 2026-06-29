@@ -332,4 +332,4 @@ retry，做错了没有验证，没有触发就没有运行，没有分析就没
 * [Detecting Proxy Gaming via Evaluator Stress Tests — Shihab et al., arXiv:2507.05619](https://arxiv.org/abs/2507.05619)
 * [On scalable oversight with weak LLMs judging strong LLMs — Kenton et al., arXiv:2407.04622](https://arxiv.org/abs/2407.04622)
 * [LLM Self-Improvement System Survey — Yang et al., SUNY Stony Brook, arXiv:2603.25681](https://arxiv.org/pdf/2603.25681)
-* [When AI builds itself — Anthropic](https://www.anthropic.com/research/when-ai-builds-itself)
+* [When AI builds itself — Anthropic](https://www.anthropic.com/institute/recursive-self-improvement)
